@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Explorer: Countries and Landmarks</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+        
+        .country-nav {
+            margin-top: 1.5rem;
+        }
+        
+        .country-nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .country-nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .country-nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .country-section {
+            margin-bottom: 4rem;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .country-header {
+            padding: 1.5rem;
+            background-color: #1a2a6c;
+            color: white;
+        }
+        
+        .country-content {
+            padding: 2rem;
+        }
+        
+        .people-section, .places-section {
+            margin-top: 2rem;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1a2a6c;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: #333;
+        }
+        
+        h4 {
+            font-size: 1.3rem;
+            margin: 1rem 0;
+            color: #1a2a6c;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        .image-container {
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        img:hover {
+            transform: scale(1.02);
+        }
+        
+        .place-card {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 2rem;
+        }
+        
+        .place-card:last-child {
+            border-bottom: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background-color: #1a2a6c;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>World Explorer</h1>
+        <p class="subtitle">Discover countries, cultures, and iconic landmarks</p>
+        <nav class="country-nav">
+            <ul>
+                <li><a href="#japan">Japan</a></li>
+                <li><a href="#italy">Italy</a></li>
+                <li><a href="#india">India</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <!-- JAPAN -->
+        <section id="japan" class="country-section">
+            <div class="country-header">
+                <h2>Japan</h2>
+            </div>
+            <div class="country-content">
+                <p>Japan is an island country in East Asia known for its unique blend of ancient traditions and cutting-edge technology. With a population of about 126 million, Japan has one of the world's highest life expectancies and is renowned for its distinctive culture, cuisine, and arts.</p>
+                
+                <div class="people-section">
+                    <h3>People & Culture</h3>
+                    <p>Japanese culture emphasizes harmony, respect, and balance. Traditional values like politeness, punctuality, and group harmony coexist with modern innovation. The Japanese are known for their dedication to craftsmanship, from traditional arts like ikebana (flower arrangement) and the tea ceremony to modern manga and anime.</p>
+                    
+                    <div class="image-container">
+                        <img src="https://replicate.delivery/xezq/dsgnguE01MIuJt0liWX9eHxHrWQdv1svNWnJj1OEGxfvGRVUA/out-0.webp" alt="Japanese people in traditional clothing">
+                    </div>
+                </div>
+                
+                <div class="places-section">
+                    <h3>Famous Places</h3>
+                    
+                    <div class="place-card">
+                        <h4>Mount Fuji</h4>
+                        <p>Japan's highest mountain at 3,776 meters, Mount Fuji is an active volcano and a UNESCO World Heritage site. It's not just a natural wonder but also a cultural and spiritual symbol that has inspired artists and poets for centuries. The perfectly symmetrical cone is especially beautiful when viewed with cherry blossoms in the foreground during spring.</p>
+                        <div class="image-container">
+                            <img src="https://replicate.delivery/xezq/ztC1QCHzHULeHycafl0JM1fUt7S1jg1jWqZd8bIQlny8NiqoA/out-0.webp" alt="Mount Fuji with cherry blossoms">
+                        </div>
+                    </div>
+                    
+                    <div class="place-card">
+                        <h4>Fushimi Inari Shrine</h4>
+                        <p>Located in Kyoto, Fushimi Inari Shrine is famous for its thousands of vermilion torii gates that create a network of tunnels and trails up the mountain. Dedicated to Inari, the Shinto god of rice, the shrine complex dates back to the 8th century. The hike through the torii gates takes about 2-3 hours and offers beautiful views of Kyoto.</p>
+                        <div class="image-container">
+                            <img src="https://replicate.delivery/xezq/lQP9eRYC7kxxWyhc9Zgfbd0LSacpmz7LNk25XhdGNrrKHRVUA/out-0.webp" alt="Fushimi Inari Shrine with red torii gates">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ITALY -->
+        <section id="italy" class="country-section">
+            <div class="country-header">
+                <h2>Italy</h2>
+            </div>
+            <div class="country-content">
+                <p>Italy, located in Southern Europe, is known for its rich history, art, architecture, and cuisine. With a population of about 60 million, Italy has been a cultural powerhouse for millennia and is home to the greatest number of UNESCO World Heritage Sites in the world.</p>
+                
+                <div class="people-section">
+                    <h3>People & Culture</h3>
+                    <p>Italians are known for their passion, expressiveness, and love of life. Family is central to Italian culture, with strong bonds extending to extended family members. Italians take pride in their regional identities, each with distinct dialects, cuisines, and traditions. The culture emphasizes enjoying life's pleasures, from long meals with loved ones to appreciating art and beauty.</p>
+                    
+                    <div class="image-container">
+                        <img src="https://replicate.delivery/xezq/BvWwDw315bauMJr2JgQjrUfclWpPddRoALU3UgeQfuztOiqoA/out-0.webp" alt="Italian people at a cafe">
+                    </div>
+                </div>
+                
+                <div class="places-section">
+                    <h3>Famous Places</h3>
+                    
+                    <div class="place-card">
+                        <h4>The Colosseum</h4>
+                        <p>The Colosseum in Rome is the largest ancient amphitheater ever built and remains an iconic symbol of Imperial Rome. Completed in 80 AD, it could hold between 50,000-80,000 spectators who would gather to watch gladiatorial contests, animal hunts, executions, and dramas. Despite being partially ruined by earthquakes and stone-robbers, the Colosseum remains one of the world's most recognizable landmarks.</p>
+                        <div class="image-container">
+                            <img src="https://replicate.delivery/xezq/93dLIllIeRTzDyH5pwsySPZqHlgxvD3HF17ROeK0wLFiHRVUA/out-0.webp" alt="The Colosseum in Rome">
+                        </div>
+                    </div>
+                    
+                    <div class="place-card">
+                        <h4>Venice Grand Canal</h4>
+                        <p>The Grand Canal is the main waterway of Venice, winding through the city in an S-shape and dividing it into two parts. Lined with more than 170 buildings dating from the 13th to the 18th century, it showcases the wealth and artistry of the Venetian Republic. The canal is traversed by gondolas, water taxis, and vaporetti (water buses), offering a unique transportation experience in this car-free city.</p>
+                        <div class="image-container">
+                            <img src="https://replicate.delivery/xezq/8iqOHa6kixaHN1TJqeZiBJVVOknA2lCF2zpxUNYdeFGtHRVUA/out-0.webp" alt="Venice Grand Canal with gondolas">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- INDIA -->
+        <section id="india" class="country-section">
+            <div class="country-header">
+                <h2>India</h2>
+            </div>
+            <div class="country-content">
+                <p>India, located in South Asia, is the world's largest democracy and second-most populous country with over 1.3 billion people. It's known for its diverse geography, languages, religions, and cultural traditions that span thousands of years of history.</p>
+                
+                <div class="people-section">
+                    <h3>People & Culture</h3>
+                    <p>Indian culture is one of the world's oldest and most diverse, with over 22 official languages and hundreds of dialects. Religion plays a central role in daily life, with Hinduism, Islam, Christianity, Sikhism, Buddhism, and Jainism all having significant followings. Indians celebrate numerous festivals throughout the year, including Diwali, Holi, Eid, and many regional celebrations that showcase the country's cultural diversity.</p>
+                    
+                    <div class="image-container">
+                        <img src="https://replicate.delivery/xezq/1777fDo5om2ROiCMXcw9FZfWfcnkmRbtxL2mstcVVOIxPiqoA/out-0.webp" alt="Indian people celebrating Holi festival">
+                    </div>
+                </div>
+                
+                <div class="places-section">
+                    <h3>Famous Places</h3>
+                    
+                    <div class="place-card">
+                        <h4>Taj Mahal</h4>
+                        <p>The Taj Mahal in Agra is an ivory-white marble mausoleum commissioned in 1632 by Mughal emperor Shah Jahan to house the tomb of his favorite wife, Mumtaz Mahal. Combining elements of Islamic, Persian, Ottoman Turkish and Indian architectural styles, it's considered the finest example of Mughal architecture and a symbol of India's rich history. The Taj Mahal attracts 7-8 million visitors annually and is a UNESCO World Heritage Site.</p>
+                        <div class="image-container">
+                            <img src="https://replicate.delivery/xezq/zSPSewZeJRsfBockr7nyHE4Dt1zXuDTK7k82dGlF86zLQiqoA/out-0.webp" alt="Taj Mahal at sunrise">
+                        </div>
+                    </div>
+                    
+                    <div class="place-card">
+                        <h4>Hawa Mahal</h4>
+                        <p>Hawa Mahal (Palace of Winds) is a palace in Jaipur, India, built in 1799 by Maharaja Sawai Pratap Singh. The five-story palace is constructed of red and pink sandstone and features a distinctive honeycomb facade with 953 small windows called jharokhas. These windows were designed to allow royal ladies to observe street festivals while remaining unseen, as they had to obey strict "purdah" (face covering). The palace's unique architecture also creates a cooling effect through ventilation, giving it its name.</p>
+                        <div class="image-container">
+                            <img src="https://replicate.delivery/xezq/pGyJQJeZDLQHZq1eqWYe6DZyt8yVfNQgL7OHqkAflrvtBJqiC/out-0.webp" alt="Hawa Mahal in Jaipur">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 World Explorer. All images generated with AI.</p>
+    </footer>
+</body>
+</html>
