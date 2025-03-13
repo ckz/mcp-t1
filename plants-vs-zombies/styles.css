@@ -1,0 +1,260 @@
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+    background-color: #87CEEB;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    width: 800px;
+    height: 600px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+/* Header Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #4a752c;
+    color: white;
+    height: 60px;
+}
+
+.sun-counter {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.sun-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #FFD700;
+    border-radius: 50%;
+    margin-right: 10px;
+    box-shadow: 0 0 10px #FFA500;
+}
+
+.wave-indicator {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Plant Selection Styles */
+.plant-selection {
+    display: flex;
+    padding: 10px;
+    background-color: #8B4513;
+    height: 80px;
+    overflow-x: auto;
+}
+
+.plant-card {
+    width: 60px;
+    height: 60px;
+    margin-right: 10px;
+    background-color: #d9d9d9;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.plant-card:hover {
+    transform: scale(1.05);
+}
+
+.plant-card.selected {
+    border: 3px solid yellow;
+}
+
+.plant-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.plant-cost {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Game Board Styles */
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    flex-grow: 1;
+    background-color: #8FBC8F;
+    position: relative;
+}
+
+.cell {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+    cursor: pointer;
+}
+
+.cell:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Plant Styles */
+.plant {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.peashooter {
+    background-color: #4CAF50;
+    border-radius: 50% 50% 0 0;
+}
+
+.sunflower {
+    background-color: #FFD700;
+    border-radius: 50%;
+}
+
+.wallnut {
+    background-color: #8B4513;
+    border-radius: 50%;
+}
+
+/* Zombie Styles */
+.zombie {
+    position: absolute;
+    width: 50px;
+    height: 80px;
+    background-color: #808080;
+    right: 0;
+    z-index: 2;
+    animation: zombie-walk 20s linear forwards;
+}
+
+.zombie.cone {
+    background-color: #808080;
+    border-top: 15px solid #FF8C00;
+}
+
+.zombie.bucket {
+    background-color: #808080;
+    border-top: 15px solid #C0C0C0;
+}
+
+@keyframes zombie-walk {
+    from {
+        right: 0;
+    }
+    to {
+        right: 100%;
+    }
+}
+
+/* Projectile Styles */
+.pea {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    z-index: 3;
+}
+
+/* Sun Styles */
+.sun {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #FFD700;
+    border-radius: 50%;
+    z-index: 4;
+    cursor: pointer;
+    animation: sun-fall 10s linear forwards;
+    box-shadow: 0 0 10px #FFA500;
+}
+
+@keyframes sun-fall {
+    from {
+        top: -30px;
+    }
+    to {
+        top: 100%;
+    }
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+}
+
+.modal h2 {
+    margin-bottom: 20px;
+    color: #4a752c;
+}
+
+.modal button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4a752c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.modal button:hover {
+    background-color: #5c8f37;
+}
+
+.hidden {
+    display: none;
+}

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Shooter Audio Generator</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .audio-item {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            width: 300px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .download-all {
+            margin-top: 20px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>2D Shooter Audio Generator</h1>
+    <p>Click on each button to generate and download audio files for the game.</p>
+    
+    <div class="container" id="audio-container">
+        <!-- Audio items will be generated here -->
+    </div>
+    
+    <button class="download-all" onclick="downloadAll()">Generate & Download All</button>
+    
+    <script>
+        // Audio context
+        let audioContext;
+        
+        // Audio definitions
+        const audioFiles = [
+            { name: 'music-menu', duration: 10, type: 'music', generate: generateMenuMusic },
+            { name: 'music-game', duration: 15, type: 'music', generate: generateGameMusic },
+            { name: 'music-boss', duration: 12, type: 'music', generate: generateBossMusic },
+            { name: 'sfx-explosion', duration: 1, type: 'sfx', generate: generateExplosionSound },
+            { name: 'sfx-laser', duration: 0.5, type: 'sfx', generate: generateLaserSound },
+            { name: 'sfx-powerup', duration: 0.8, type: 'sfx', generate: generatePowerupSound },
+            { name: 'sfx-player-hit', duration: 0.6, type: 'sfx', generate: generatePlayerHitSound },
+            { name: 'sfx-enemy-hit', duration: 0.4, type: 'sfx', generate: generateEnemyHitSound },
+            { name: 'sfx-bomb', duration: 1.2, type: 'sfx', generate: generateBombSound }
+        ];
+        
+        // Initialize
+        window.onload = function() {
+            // Create audio context
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                alert('Web Audio API is not supported in this browser');
+                return;
+            }
+            
+            // Generate UI
+            generateAudioUI();
+        };
+        
+        // Generate audio UI
+        function generateAudioUI() {
+            const container = document.getElementById('audio-container');
+            
+            audioFiles.forEach(audio => {
+                // Create audio item container
+                const audioDiv = document.createElement('div');
+                audioDiv.className = 'audio-item';
+                
+                // Add title
+                const title = document.createElement('h2');
+                title.textContent = audio.name;
+                
+                // Add type and duration
+                const info = document.createElement('p');
+                info.textContent = `Type: ${audio.type}, Duration: ${audio.duration}s`;
+                
+                // Add audio element
+                const audioElement = document.createElement('audio');
+                audioElement.controls = true;
+                audioElement.id = `audio-${audio.name}`;
+                
+                // Add generate button
+                const button = document.createElement('button');
+                button.textContent = 'Generate & Play';
+                button.onclick = function() {
+                    generateAudio(audio.name);
+                };
+                
+                // Add download button
+                const downloadButton = document.createElement('button');
+                downloadButton.textContent = 'Download';
+                downloadButton.style.backgroundColor = '#2196F3';
+                downloadButton.onclick = function() {
+                    downloadAudio(audio.name);
+                };
+                
+                // Add to container
+                audioDiv.appendChild(title);
+                audioDiv.appendChild(info);
+                audioDiv.appendChild(audioElement);
+                audioDiv.appendChild(document.createElement('br'));
+                audioDiv.appendChild(document.createElement('br'));
+                audioDiv.appendChild(button);
+                audioDiv.appendChild(downloadButton);
+                container.appendChild(audioDiv);
+            });
+        }
+        
+        // Generate audio
+        async function generateAudio(name) {
+            const audioFile = audioFiles.find(a => a.name === name);
+            if (!audioFile) return;
+            
+            const audioElement = document.getElementById(`audio-${name}`);
+            if (!audioElement) return;
+            
+            // Generate audio buffer
+            const buffer = await audioFile.generate(audioContext, audioFile.duration);
+            
+            // Convert to WAV
+            const wav = audioBufferToWav(buffer);
+            const blob = new Blob([wav], { type: 'audio/wav' });
+            
+            // Set as source for audio element
+            const url = URL.createObjectURL(blob);
+            audioElement.src = url;
+            
+            // Play audio
+            audioElement.play();
+            
+            return blob;
+        }
+        
+        // Download audio
+        async function downloadAudio(name) {
+            const blob = await generateAudio(name);
+            if (!blob) return;
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${name}.wav`;
+            link.click();
+        }
+        
+        // Download all audio files
+        async function downloadAll() {
+            for (const audio of audioFiles) {
+                await downloadAudio(audio.name);
+                // Small delay to avoid overwhelming the browser
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+        
+        // Generate menu music
+        async function generateMenuMusic(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create a simple arpeggiated chord progression
+            const notes = [
+                // C minor
+                [261.63, 311.13, 392.00],
+                // G major
+                [392.00, 493.88, 587.33],
+                // A# major
+                [466.16, 587.33, 698.46],
+                // F major
+                [349.23, 440.00, 523.25]
+            ];
+            
+            const noteDuration = 0.2; // seconds
+            const noteSpacing = 0.05; // seconds
+            
+            let time = 0;
+            
+            // Generate arpeggiated chords
+            while (time < duration) {
+                const chordIndex = Math.floor(time / 2) % notes.length;
+                const chord = notes[chordIndex];
+                
+                const noteIndex = Math.floor(time / noteDuration) % chord.length;
+                const frequency = chord[noteIndex];
+                
+                // Generate note
+                for (let i = 0; i < sampleRate * noteDuration; i++) {
+                    if (time + i / sampleRate >= duration) break;
+                    
+                    // Sine wave with decay
+                    const t = i / sampleRate;
+                    const envelope = Math.exp(-t * 5);
+                    const value = Math.sin(2 * Math.PI * frequency * t) * 0.3 * envelope;
+                    
+                    const index = Math.floor(time * sampleRate) + i;
+                    if (index < leftChannel.length) {
+                        leftChannel[index] += value;
+                        rightChannel[index] += value;
+                    }
+                }
+                
+                time += noteDuration + noteSpacing;
+            }
+            
+            // Add a bass line
+            time = 0;
+            while (time < duration) {
+                const chordIndex = Math.floor(time / 2) % notes.length;
+                const bassNote = notes[chordIndex][0] / 2; // One octave lower
+                
+                // Generate bass note
+                for (let i = 0; i < sampleRate * 0.4; i++) {
+                    if (time + i / sampleRate >= duration) break;
+                    
+                    // Sine wave with decay
+                    const t = i / sampleRate;
+                    const envelope = Math.exp(-t * 3);
+                    const value = Math.sin(2 * Math.PI * bassNote * t) * 0.4 * envelope;
+                    
+                    const index = Math.floor(time * sampleRate) + i;
+                    if (index < leftChannel.length) {
+                        leftChannel[index] += value;
+                        rightChannel[index] += value;
+                    }
+                }
+                
+                time += 0.5; // Half note rhythm
+            }
+            
+            return buffer;
+        }
+        
+        // Generate game music
+        async function generateGameMusic(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create a driving beat with synth melody
+            const bpm = 140;
+            const beatDuration = 60 / bpm;
+            
+            // Bass drum pattern
+            const kickPattern = [1, 0, 0, 0, 1, 0, 0, 0];
+            const snarePattern = [0, 0, 1, 0, 0, 0, 1, 0];
+            const hihatPattern = [1, 1, 1, 1, 1, 1, 1, 1];
+            
+            // Melody notes (pentatonic scale)
+            const melodyNotes = [523.25, 587.33, 659.25, 783.99, 880.00];
+            
+            let time = 0;
+            let patternIndex = 0;
+            
+            // Generate drum pattern
+            while (time < duration) {
+                const kickVolume = kickPattern[patternIndex % kickPattern.length] * 0.5;
+                const snareVolume = snarePattern[patternIndex % snarePattern.length] * 0.3;
+                const hihatVolume = hihatPattern[patternIndex % hihatPattern.length] * 0.15;
+                
+                // Kick drum (low frequency sine with quick decay)
+                if (kickVolume > 0) {
+                    for (let i = 0; i < sampleRate * 0.2; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 20);
+                        const freq = 60 + 80 * Math.exp(-t * 40);
+                        const value = Math.sin(2 * Math.PI * freq * t) * kickVolume * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                // Snare drum (noise with bandpass filter)
+                if (snareVolume > 0) {
+                    for (let i = 0; i < sampleRate * 0.2; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 15);
+                        const noise = Math.random() * 2 - 1;
+                        const value = noise * snareVolume * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                // Hi-hat (high frequency noise with very quick decay)
+                if (hihatVolume > 0) {
+                    for (let i = 0; i < sampleRate * 0.05; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 50);
+                        const noise = Math.random() * 2 - 1;
+                        const value = noise * hihatVolume * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                // Add melody note every 2 beats
+                if (patternIndex % 2 === 0) {
+                    const noteIndex = Math.floor(patternIndex / 2) % melodyNotes.length;
+                    const frequency = melodyNotes[noteIndex];
+                    
+                    for (let i = 0; i < sampleRate * beatDuration * 1.5; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 2) * (1 - Math.exp(-t * 10));
+                        const value = Math.sin(2 * Math.PI * frequency * t) * 0.2 * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                time += beatDuration / 2; // Eighth notes
+                patternIndex++;
+            }
+            
+            return buffer;
+        }
+        
+        // Generate boss music
+        async function generateBossMusic(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create intense, driving music with distorted bass
+            const bpm = 160;
+            const beatDuration = 60 / bpm;
+            
+            // Intense drum pattern
+            const kickPattern = [1, 0, 1, 0, 1, 0, 1, 0];
+            const snarePattern = [0, 0, 1, 0, 0, 0, 1, 1];
+            const hihatPattern = [1, 1, 1, 1, 1, 1, 1, 1];
+            
+            // Distorted bass line
+            const bassNotes = [110, 110, 146.83, 110, 110, 110, 146.83, 164.81];
+            
+            // Alarm-like high notes
+            const alarmNotes = [880, 932.33];
+            
+            let time = 0;
+            let patternIndex = 0;
+            
+            // Generate intense pattern
+            while (time < duration) {
+                const kickVolume = kickPattern[patternIndex % kickPattern.length] * 0.6;
+                const snareVolume = snarePattern[patternIndex % snarePattern.length] * 0.4;
+                const hihatVolume = hihatPattern[patternIndex % hihatPattern.length] * 0.2;
+                
+                // Kick drum (low frequency with distortion)
+                if (kickVolume > 0) {
+                    for (let i = 0; i < sampleRate * 0.2; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 15);
+                        const freq = 50 + 100 * Math.exp(-t * 30);
+                        let value = Math.sin(2 * Math.PI * freq * t) * kickVolume * envelope;
+                        
+                        // Add distortion
+                        value = Math.tanh(value * 3) * 0.8;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                // Snare drum (noise with more bite)
+                if (snareVolume > 0) {
+                    for (let i = 0; i < sampleRate * 0.2; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 12);
+                        const noise = Math.random() * 2 - 1;
+                        const value = noise * snareVolume * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                // Hi-hat (high frequency noise with quick decay)
+                if (hihatVolume > 0) {
+                    for (let i = 0; i < sampleRate * 0.05; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        const envelope = Math.exp(-t * 50);
+                        const noise = Math.random() * 2 - 1;
+                        const value = noise * hihatVolume * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value;
+                            rightChannel[index] += value;
+                        }
+                    }
+                }
+                
+                // Distorted bass line
+                const bassNote = bassNotes[patternIndex % bassNotes.length];
+                for (let i = 0; i < sampleRate * beatDuration; i++) {
+                    if (time + i / sampleRate >= duration) break;
+                    
+                    const t = i / sampleRate;
+                    const envelope = 0.8 - 0.3 * Math.exp(-t * 5);
+                    let value = Math.sin(2 * Math.PI * bassNote * t) * 0.3 * envelope;
+                    
+                    // Add distortion and harmonics
+                    value = Math.tanh(value * 4) * 0.7;
+                    value += Math.sin(2 * Math.PI * bassNote * 2 * t) * 0.1 * envelope;
+                    
+                    const index = Math.floor(time * sampleRate) + i;
+                    if (index < leftChannel.length) {
+                        leftChannel[index] += value;
+                        rightChannel[index] += value;
+                    }
+                }
+                
+                // Add alarm sound every 4 beats
+                if (patternIndex % 16 === 0 || patternIndex % 16 === 8) {
+                    const alarmNote = alarmNotes[Math.floor(patternIndex / 8) % alarmNotes.length];
+                    
+                    for (let i = 0; i < sampleRate * beatDuration * 4; i++) {
+                        if (time + i / sampleRate >= duration) break;
+                        
+                        const t = i / sampleRate;
+                        // Pulsing envelope
+                        const envelope = 0.3 * (0.7 + 0.3 * Math.sin(2 * Math.PI * 8 * t));
+                        const value = Math.sin(2 * Math.PI * alarmNote * t) * envelope;
+                        
+                        const index = Math.floor(time * sampleRate) + i;
+                        if (index < leftChannel.length) {
+                            leftChannel[index] += value * 0.15;
+                            rightChannel[index] += value * 0.15;
+                        }
+                    }
+                }
+                
+                time += beatDuration / 2; // Eighth notes
+                patternIndex++;
+            }
+            
+            return buffer;
+        }
+        
+        // Generate explosion sound
+        async function generateExplosionSound(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create explosion sound (noise with lowpass filter and decay)
+            for (let i = 0; i < buffer.length; i++) {
+                const t = i / sampleRate;
+                
+                // Envelope with quick attack and long decay
+                const envelope = Math.exp(-t * 5);
+                
+                // Noise with decreasing frequency content over time
+                const noise = Math.random() * 2 - 1;
+                const lowpassCutoff = Math.max(0.01, 1 - t * 2); // Decreasing cutoff
+                
+                // Simple lowpass filter approximation
+                const filteredNoise = noise * lowpassCutoff;
+                
+                // Add some low frequency rumble
+                const rumble = Math.sin(2 * Math.PI * 40 * t) * 0.5 * Math.exp(-t * 8);
+                
+                const value = (filteredNoise * 0.7 + rumble * 0.3) * envelope * 0.8;
+                
+                leftChannel[i] = value;
+                rightChannel[i] = value;
+            }
+            
+            return buffer;
+        }
+        
+        // Generate laser sound
+        async function generateLaserSound(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create laser sound (frequency sweep with harmonics)
+            const startFreq = 880;
+            const endFreq = 220;
+            
+            for (let i = 0; i < buffer.length; i++) {
+                const t = i / sampleRate;
+                
+                // Envelope with quick attack and decay
+                const envelope = Math.exp(-t * 10) * (1 - Math.exp(-t * 100));
+                
+                // Frequency sweep
+                const freqSweep = startFreq + (endFreq - startFreq) * Math.pow(t / duration, 0.5);
+                
+                // Main tone with harmonics
+                let value = Math.sin(2 * Math.PI * freqSweep * t) * 0.5;
+                value += Math.sin(2 * Math.PI * freqSweep * 2 * t) * 0.3;
+                value += Math.sin(2 * Math.PI * freqSweep * 3 * t) * 0.2;
+                
+                // Add noise for texture
+                const noise = Math.random() * 2 - 1;
+                value += noise * 0.1;
+                
+                value *= envelope * 0.7;
+                
+                leftChannel[i] = value;
+                rightChannel[i] = value;
+            }
+            
+            return buffer;
+        }
+        
+        // Generate powerup sound
+        async function generatePowerupSound(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create powerup sound (ascending arpeggio with shimmer)
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            const noteDuration = duration / notes.length;
+            
+            for (let noteIndex = 0; noteIndex < notes.length; noteIndex++) {
+                const frequency = notes[noteIndex];
+                const startTime = noteIndex * noteDuration;
+                
+                for (let i = 0; i < sampleRate * noteDuration; i++) {
+                    const t = i / sampleRate;
+                    const globalT = startTime + t;
+                    
+                    // Note envelope
+                    const envelope = Math.sin(Math.PI * t / noteDuration);
+                    
+                    // Main tone
+                    let value = Math.sin(2 * Math.PI * frequency * t) * 0.5;
+                    
+                    // Add shimmer (high frequency modulation)
+                    const shimmer = Math.sin(2 * Math.PI * 4000 * t) * Math.sin(2 * Math.PI * 10 * t) * 0.2;
+                    
+                    value = (value + shimmer) * envelope * 0.7;
+                    
+                    const index = Math.floor(startTime * sampleRate) + i;
+                    if (index < buffer.length) {
+                        leftChannel[index] = value;
+                        rightChannel[index] = value;
+                    }
+                }
+            }
+            
+            return buffer;
+        }
+        
+        // Generate player hit sound
+        async function generatePlayerHitSound(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create player hit sound (impact with metallic ring)
+            for (let i = 0; i < buffer.length; i++) {
+                const t = i / sampleRate;
+                
+                // Envelope with very quick attack and medium decay
+                const envelope = Math.exp(-t * 15);
+                
+                // Impact noise
+                const noise = Math.random() * 2 - 1;
+                
+                // Metallic ring (multiple high frequencies)
+                const ring1 = Math.sin(2 * Math.PI * 800 * t) * Math.exp(-t * 10) * 0.3;
+                const ring2 = Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 8) * 0.2;
+                const ring3 = Math.sin(2 * Math.PI * 1600 * t) * Math.exp(-t * 12) * 0.1;
+                
+                const value = (noise * 0.4 + ring1 + ring2 + ring3) * envelope * 0.7;
+                
+                leftChannel[i] = value;
+                rightChannel[i] = value;
+            }
+            
+            return buffer;
+        }
+        
+        // Generate enemy hit sound
+        async function generateEnemyHitSound(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create enemy hit sound (impact with electronic zap)
+            for (let i = 0; i < buffer.length; i++) {
+                const t = i / sampleRate;
+                
+                // Envelope with quick attack and decay
+                const envelope = Math.exp(-t * 20);
+                
+                // Impact noise
+                const noise = Math.random() * 2 - 1;
+                
+                // Electronic zap (frequency sweep down)
+                const startFreq = 600;
+                const endFreq = 200;
+                const freqSweep = startFreq + (endFreq - startFreq) * Math.min(1, t * 5);
+                const zap = Math.sin(2 * Math.PI * freqSweep * t) * 0.5;
+                
+                const value = (noise * 0.3 + zap * 0.7) * envelope * 0.7;
+                
+                leftChannel[i] = value;
+                rightChannel[i] = value;
+            }
+            
+            return buffer;
+        }
+        
+        // Generate bomb sound
+        async function generateBombSound(context, duration) {
+            const sampleRate = context.sampleRate;
+            const buffer = context.createBuffer(2, sampleRate * duration, sampleRate);
+            
+            // Get channel data
+            const leftChannel = buffer.getChannelData(0);
+            const rightChannel = buffer.getChannelData(1);
+            
+            // Create bomb sound (low boom with high frequency debris)
+            for (let i = 0; i < buffer.length; i++) {
+                const t = i / sampleRate;
+                
+                // Main explosion envelope
+                const mainEnvelope = Math.exp(-t * 4);
+                
+                // Low frequency boom
+                const boom = Math.sin(2 * Math.PI * 60 * t) * 0.7 + 
+                             Math.sin(2 * Math.PI * 80 * t) * 0.3;
+                
+                // High frequency debris (random bursts)
+                let debris = 0;
+                for (let j = 0; j < 10; j++) {
+                    const burstTime = j * duration / 10;
+                    const burstEnvelope = Math.exp(-(t - burstTime) * 40) * (t >= burstTime ? 1 : 0);
+                    debris += (Math.random() * 2 - 1) * burstEnvelope * 0.2;
+                }
+                
+                // Combine sounds
+                const value = (boom * mainEnvelope * 0.7 + debris * 0.3) * 0.8;
+                
+                leftChannel[i] = value;
+                rightChannel[i] = value;
+            }
+            
+            return buffer;
+        }
+        
+        // Convert AudioBuffer to WAV format
+        function audioBufferToWav(buffer) {
+            const numChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+            
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+            
+            const dataLength = buffer.length * numChannels * bytesPerSample;
+            const fileLength = 44 + dataLength;
+            
+            const arrayBuffer = new ArrayBuffer(fileLength);
+            const dataView = new DataView(arrayBuffer);
+            
+            // RIFF chunk descriptor
+            writeString(dataView, 0, 'RIFF');
+            dataView.setUint32(4, fileLength - 8, true);
+            writeString(dataView, 8, 'WAVE');
+            
+            // fmt sub-chunk
+            writeString(dataView, 12, 'fmt ');
+            dataView.setUint32(16, 16, true); // fmt chunk size
+            dataView.setUint16(20, format, true);
+            dataView.setUint16(22, numChannels, true);
+            dataView.setUint32(24, sampleRate, true);
+            dataView.setUint32(28, sampleRate * blockAlign, true); // byte rate
+            dataView.setUint16(32, blockAlign, true);
+            dataView.setUint16(34, bitDepth, true);
+            
+            // data sub-chunk
+            writeString(dataView, 36, 'data');
+            dataView.setUint32(40, dataLength, true);
+            
+            // Write audio data
+            const channels = [];
+            for (let i = 0; i < numChannels; i++) {
+                channels.push(buffer.getChannelData(i));
+            }
+            
+            let offset = 44;
+            for (let i = 0; i < buffer.length; i++) {
+                for (let channel = 0; channel < numChannels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, channels[channel][i]));
+                    const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+                    dataView.setInt16(offset, value, true);
+                    offset += bytesPerSample;
+                }
+            }
+            
+            return arrayBuffer;
+        }
+        
+        // Helper function to write a string to a DataView
+        function writeString(dataView, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                dataView.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+    </script>
+</body>
+</html>

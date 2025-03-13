@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Shooter Asset Generator</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .asset {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #444;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .download-all {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>2D Shooter Asset Generator</h1>
+    <p>Click on each asset to download it, or use the "Download All" button to get all assets at once.</p>
+    
+    <div class="container" id="asset-container">
+        <!-- Assets will be generated here -->
+    </div>
+    
+    <button class="download-all" onclick="downloadAll()">Download All Assets</button>
+    
+    <script>
+        // Asset definitions
+        const assets = [
+            { name: 'player', width: 64, height: 64, frames: 6, draw: drawPlayer },
+            { name: 'enemy-basic', width: 48, height: 48, frames: 2, draw: drawEnemyBasic },
+            { name: 'enemy-fast', width: 32, height: 32, frames: 2, draw: drawEnemyFast },
+            { name: 'enemy-tank', width: 64, height: 64, frames: 2, draw: drawEnemyTank },
+            { name: 'mini-boss', width: 96, height: 96, frames: 4, draw: drawMiniBoss },
+            { name: 'boss', width: 192, height: 192, frames: 4, draw: drawBoss },
+            { name: 'bullet-player', width: 16, height: 16, frames: 1, draw: drawPlayerBullet },
+            { name: 'bullet-enemy', width: 16, height: 16, frames: 1, draw: drawEnemyBullet },
+            { name: 'laser', width: 16, height: 32, frames: 1, draw: drawLaser },
+            { name: 'explosion', width: 64, height: 64, frames: 16, draw: drawExplosion },
+            { name: 'powerup-weapon', width: 32, height: 32, frames: 1, draw: drawPowerupWeapon },
+            { name: 'powerup-shield', width: 32, height: 32, frames: 1, draw: drawPowerupShield },
+            { name: 'powerup-speed', width: 32, height: 32, frames: 1, draw: drawPowerupSpeed },
+            { name: 'powerup-bomb', width: 32, height: 32, frames: 1, draw: drawPowerupBomb },
+            { name: 'powerup-life', width: 32, height: 32, frames: 1, draw: drawPowerupLife },
+            { name: 'bg-stars', width: 800, height: 600, frames: 1, draw: drawBgStars },
+            { name: 'bg-nebula', width: 800, height: 600, frames: 1, draw: drawBgNebula },
+            { name: 'bg-planets', width: 800, height: 600, frames: 1, draw: drawBgPlanets },
+            { name: 'life-icon', width: 32, height: 32, frames: 1, draw: drawLifeIcon },
+            { name: 'bomb-icon', width: 32, height: 32, frames: 1, draw: drawBombIcon },
+            { name: 'title', width: 400, height: 100, frames: 1, draw: drawTitle }
+        ];
+        
+        // Initialize
+        window.onload = function() {
+            generateAssets();
+        };
+        
+        // Generate all assets
+        function generateAssets() {
+            const container = document.getElementById('asset-container');
+            
+            assets.forEach(asset => {
+                // Create asset container
+                const assetDiv = document.createElement('div');
+                assetDiv.className = 'asset';
+                
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = asset.width * asset.frames;
+                canvas.height = asset.height;
+                canvas.id = asset.name;
+                
+                // Draw asset
+                const ctx = canvas.getContext('2d');
+                asset.draw(ctx, asset.width, asset.height, asset.frames);
+                
+                // Add title
+                const title = document.createElement('h3');
+                title.textContent = asset.name;
+                
+                // Add download button
+                const button = document.createElement('button');
+                button.textContent = 'Download';
+                button.onclick = function() {
+                    downloadAsset(asset.name);
+                };
+                
+                // Add to container
+                assetDiv.appendChild(title);
+                assetDiv.appendChild(canvas);
+                assetDiv.appendChild(button);
+                container.appendChild(assetDiv);
+            });
+        }
+        
+        // Download a single asset
+        function downloadAsset(name) {
+            const canvas = document.getElementById(name);
+            const link = document.createElement('a');
+            link.download = name + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Download all assets
+        function downloadAll() {
+            assets.forEach(asset => {
+                downloadAsset(asset.name);
+            });
+        }
+        
+        // Drawing functions for each asset
+        function drawPlayer(ctx, width, height, frames) {
+            // Colors
+            const bodyColor = '#4287f5';
+            const wingColor = '#2563eb';
+            const engineColor = '#1e40af';
+            const cockpitColor = '#93c5fd';
+            const thrusterColor = '#60a5fa';
+            
+            // Draw each frame
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                
+                // Base for all frames
+                ctx.fillStyle = bodyColor;
+                
+                // Different ship states based on frame
+                if (frame < 2) {
+                    // Idle frames (0-1)
+                    // Ship body
+                    ctx.beginPath();
+                    ctx.moveTo(x + width/2, y = height * 0.2);
+                    ctx.lineTo(x + width * 0.8, height * 0.8);
+                    ctx.lineTo(x + width * 0.2, height * 0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Wings
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(x + width * 0.15, height * 0.6, width * 0.7, height * 0.15);
+                    
+                    // Engine
+                    ctx.fillStyle = engineColor;
+                    ctx.fillRect(x + width * 0.4, height * 0.75, width * 0.2, height * 0.15);
+                    
+                    // Cockpit
+                    ctx.fillStyle = cockpitColor;
+                    ctx.beginPath();
+                    ctx.ellipse(x + width/2, height * 0.4, width * 0.1, height * 0.1, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Thrusters (animated)
+                    ctx.fillStyle = thrusterColor;
+                    const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                    ctx.fillRect(x + width * 0.4, height * 0.9, width * 0.2, thrusterHeight);
+                } else if (frame < 4) {
+                    // Left movement frames (2-3)
+                    // Ship body tilted left
+                    ctx.save();
+                    ctx.translate(x + width/2, height/2);
+                    ctx.rotate(-Math.PI * 0.1);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -height * 0.3);
+                    ctx.lineTo(width * 0.3, height * 0.3);
+                    ctx.lineTo(-width * 0.3, height * 0.3);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Wings
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(-width * 0.35, height * 0.1, width * 0.7, height * 0.15);
+                    
+                    // Engine
+                    ctx.fillStyle = engineColor;
+                    ctx.fillRect(-width * 0.1, height * 0.25, width * 0.2, height * 0.15);
+                    
+                    // Cockpit
+                    ctx.fillStyle = cockpitColor;
+                    ctx.beginPath();
+                    ctx.ellipse(0, -height * 0.1, width * 0.1, height * 0.1, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Thrusters (animated)
+                    ctx.fillStyle = thrusterColor;
+                    const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                    ctx.fillRect(-width * 0.1, height * 0.4, width * 0.2, thrusterHeight);
+                    ctx.restore();
+                } else {
+                    // Right movement frames (4-5)
+                    // Ship body tilted right
+                    ctx.save();
+                    ctx.translate(x + width/2, height/2);
+                    ctx.rotate(Math.PI * 0.1);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -height * 0.3);
+                    ctx.lineTo(width * 0.3, height * 0.3);
+                    ctx.lineTo(-width * 0.3, height * 0.3);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Wings
+                    ctx.fillStyle = wingColor;
+                    ctx.fillRect(-width * 0.35, height * 0.1, width * 0.7, height * 0.15);
+                    
+                    // Engine
+                    ctx.fillStyle = engineColor;
+                    ctx.fillRect(-width * 0.1, height * 0.25, width * 0.2, height * 0.15);
+                    
+                    // Cockpit
+                    ctx.fillStyle = cockpitColor;
+                    ctx.beginPath();
+                    ctx.ellipse(0, -height * 0.1, width * 0.1, height * 0.1, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Thrusters (animated)
+                    ctx.fillStyle = thrusterColor;
+                    const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                    ctx.fillRect(-width * 0.1, height * 0.4, width * 0.2, thrusterHeight);
+                    ctx.restore();
+                }
+            }
+        }
+        
+        function drawEnemyBasic(ctx, width, height, frames) {
+            // Colors
+            const bodyColor = '#f87171';
+            const wingColor = '#ef4444';
+            const engineColor = '#b91c1c';
+            const cockpitColor = '#fca5a5';
+            
+            // Draw each frame
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                
+                // Ship body (inverted triangle)
+                ctx.fillStyle = bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(x + width/2, height * 0.8);
+                ctx.lineTo(x + width * 0.8, height * 0.2);
+                ctx.lineTo(x + width * 0.2, height * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Wings
+                ctx.fillStyle = wingColor;
+                ctx.fillRect(x + width * 0.15, height * 0.25, width * 0.7, height * 0.15);
+                
+                // Engine
+                ctx.fillStyle = engineColor;
+                ctx.fillRect(x + width * 0.4, height * 0.1, width * 0.2, height * 0.15);
+                
+                // Cockpit
+                ctx.fillStyle = cockpitColor;
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, height * 0.6, width * 0.1, height * 0.1, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Thrusters (animated)
+                ctx.fillStyle = '#fca5a5';
+                const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                ctx.fillRect(x + width * 0.4, height * 0, width * 0.2, thrusterHeight);
+            }
+        }
+        
+        function drawEnemyFast(ctx, width, height, frames) {
+            // Colors
+            const bodyColor = '#fbbf24';
+            const wingColor = '#f59e0b';
+            const engineColor = '#d97706';
+            
+            // Draw each frame
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                
+                // Ship body (narrow triangle)
+                ctx.fillStyle = bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(x + width/2, height * 0.8);
+                ctx.lineTo(x + width * 0.7, height * 0.2);
+                ctx.lineTo(x + width * 0.3, height * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Wings
+                ctx.fillStyle = wingColor;
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.3, height * 0.4);
+                ctx.lineTo(x + width * 0.1, height * 0.2);
+                ctx.lineTo(x + width * 0.3, height * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.7, height * 0.4);
+                ctx.lineTo(x + width * 0.9, height * 0.2);
+                ctx.lineTo(x + width * 0.7, height * 0.2);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Engine
+                ctx.fillStyle = engineColor;
+                ctx.fillRect(x + width * 0.4, height * 0.1, width * 0.2, height * 0.1);
+                
+                // Thrusters (animated)
+                ctx.fillStyle = '#fdba74';
+                const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                ctx.fillRect(x + width * 0.4, height * 0, width * 0.2, thrusterHeight);
+            }
+        }
+        
+        function drawEnemyTank(ctx, width, height, frames) {
+            // Colors
+            const bodyColor = '#a3e635';
+            const armorColor = '#65a30d';
+            const gunColor = '#4d7c0f';
+            
+            // Draw each frame
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                
+                // Ship body (wide rectangle)
+                ctx.fillStyle = bodyColor;
+                ctx.fillRect(x + width * 0.2, height * 0.3, width * 0.6, height * 0.4);
+                
+                // Armor plates
+                ctx.fillStyle = armorColor;
+                ctx.fillRect(x + width * 0.15, height * 0.25, width * 0.7, height * 0.1);
+                ctx.fillRect(x + width * 0.15, height * 0.65, width * 0.7, height * 0.1);
+                
+                // Side guns
+                ctx.fillStyle = gunColor;
+                ctx.fillRect(x + width * 0.1, height * 0.35, width * 0.1, height * 0.3);
+                ctx.fillRect(x + width * 0.8, height * 0.35, width * 0.1, height * 0.3);
+                
+                // Main gun
+                ctx.fillRect(x + width * 0.4, height * 0.7, width * 0.2, height * 0.2);
+                
+                // Thrusters (animated)
+                ctx.fillStyle = '#d9f99d';
+                const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                ctx.fillRect(x + width * 0.3, height * 0.15, width * 0.1, thrusterHeight);
+                ctx.fillRect(x + width * 0.6, height * 0.15, width * 0.1, thrusterHeight);
+            }
+        }
+        
+        function drawMiniBoss(ctx, width, height, frames) {
+            // Colors
+            const bodyColor = '#c084fc';
+            const wingColor = '#a855f7';
+            const engineColor = '#7e22ce';
+            const gunColor = '#581c87';
+            
+            // Draw each frame
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                
+                // Ship body (hexagon)
+                ctx.fillStyle = bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.3, height * 0.2);
+                ctx.lineTo(x + width * 0.7, height * 0.2);
+                ctx.lineTo(x + width * 0.9, height * 0.5);
+                ctx.lineTo(x + width * 0.7, height * 0.8);
+                ctx.lineTo(x + width * 0.3, height * 0.8);
+                ctx.lineTo(x + width * 0.1, height * 0.5);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Wings
+                ctx.fillStyle = wingColor;
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.1, height * 0.5);
+                ctx.lineTo(x + width * 0, height * 0.3);
+                ctx.lineTo(x + width * 0.2, height * 0.3);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.9, height * 0.5);
+                ctx.lineTo(x + width * 1.0, height * 0.3);
+                ctx.lineTo(x + width * 0.8, height * 0.3);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Engines
+                ctx.fillStyle = engineColor;
+                ctx.fillRect(x + width * 0.25, height * 0.1, width * 0.2, height * 0.1);
+                ctx.fillRect(x + width * 0.55, height * 0.1, width * 0.2, height * 0.1);
+                
+                // Guns (animated rotation)
+                ctx.fillStyle = gunColor;
+                const gunAngle = frame * Math.PI / 2;
+                
+                // Left gun
+                ctx.save();
+                ctx.translate(x + width * 0.3, height * 0.5);
+                ctx.rotate(gunAngle);
+                ctx.fillRect(-width * 0.05, -height * 0.15, width * 0.1, height * 0.3);
+                ctx.restore();
+                
+                // Right gun
+                ctx.save();
+                ctx.translate(x + width * 0.7, height * 0.5);
+                ctx.rotate(gunAngle + Math.PI);
+                ctx.fillRect(-width * 0.05, -height * 0.15, width * 0.1, height * 0.3);
+                ctx.restore();
+                
+                // Center gun
+                ctx.save();
+                ctx.translate(x + width * 0.5, height * 0.5);
+                ctx.rotate(gunAngle + Math.PI / 2);
+                ctx.fillRect(-width * 0.05, -height * 0.2, width * 0.1, height * 0.4);
+                ctx.restore();
+                
+                // Thrusters
+                ctx.fillStyle = '#ddd6fe';
+                const thrusterHeight = frame % 2 === 0 ? height * 0.1 : height * 0.15;
+                ctx.fillRect(x + width * 0.25, height * 0, width * 0.2, thrusterHeight);
+                ctx.fillRect(x + width * 0.55, height * 0, width * 0.2, thrusterHeight);
+            }
+        }
+        
+        function drawBoss(ctx, width, height, frames) {
+            // Colors
+            const bodyColor = '#0ea5e9';
+            const armorColor = '#0284c7';
+            const coreColor = '#0c4a6e';
+            const energyColor = '#7dd3fc';
+            const gunColor = '#0369a1';
+            
+            // Draw each frame
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                
+                // Main body (large octagon)
+                ctx.fillStyle = bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.3, height * 0.1);
+                ctx.lineTo(x + width * 0.7, height * 0.1);
+                ctx.lineTo(x + width * 0.9, height * 0.3);
+                ctx.lineTo(x + width * 0.9, height * 0.7);
+                ctx.lineTo(x + width * 0.7, height * 0.9);
+                ctx.lineTo(x + width * 0.3, height * 0.9);
+                ctx.lineTo(x + width * 0.1, height * 0.7);
+                ctx.lineTo(x + width * 0.1, height * 0.3);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Armor plates
+                ctx.fillStyle = armorColor;
+                // Top
+                ctx.fillRect(x + width * 0.3, height * 0.05, width * 0.4, height * 0.05);
+                // Bottom
+                ctx.fillRect(x + width * 0.3, height * 0.9, width * 0.4, height * 0.05);
+                // Left
+                ctx.fillRect(x + width * 0.05, height * 0.3, width * 0.05, height * 0.4);
+                // Right
+                ctx.fillRect(x + width * 0.9, height * 0.3, width * 0.05, height * 0.4);
+                
+                // Core (pulsing)
+                const pulseScale = 0.9 + 0.1 * Math.sin(frame * Math.PI / 2);
+                ctx.fillStyle = coreColor;
+                ctx.beginPath();
+                ctx.arc(x + width * 0.5, height * 0.5, width * 0.2 * pulseScale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Energy ring
+                ctx.strokeStyle = energyColor;
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.arc(x + width * 0.5, height * 0.5, width * 0.25, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Guns (rotating with frame)
+                ctx.fillStyle = gunColor;
+                
+                // 4 corner guns
+                const gunPositions = [
+                    { x: 0.25, y: 0.25 },
+                    { x: 0.75, y: 0.25 },
+                    { x: 0.25, y: 0.75 },
+                    { x: 0.75, y: 0.75 }
+                ];
+                
+                gunPositions.forEach((pos, i) => {
+                    const gunAngle = frame * Math.PI / 2 + i * Math.PI / 2;
+                    ctx.save();
+                    ctx.translate(x + width * pos.x, height * pos.y);
+                    ctx.rotate(gunAngle);
+                    ctx.fillRect(-width * 0.05, -height * 0.15, width * 0.1, height * 0.3);
+                    ctx.restore();
+                });
+                
+                // Main gun (bottom)
+                ctx.fillRect(x + width * 0.4, height * 0.7, width * 0.2, height * 0.2);
+                
+                // Side wings
+                ctx.fillStyle = armorColor;
+                // Left wing
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.1, height * 0.4);
+                ctx.lineTo(x + width * 0, height * 0.3);
+                ctx.lineTo(x + width * 0, height * 0.7);
+                ctx.lineTo(x + width * 0.1, height * 0.6);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Right wing
+                ctx.beginPath();
+                ctx.moveTo(x + width * 0.9, height * 0.4);
+                ctx.lineTo(x + width * 1.0, height * 0.3);
+                ctx.lineTo(x + width * 1.0, height * 0.7);
+                ctx.lineTo(x + width * 0.9, height * 0.6);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Energy pulses (animated)
+                ctx.fillStyle = energyColor;
+                const pulseOffset = frame % 4;
+                ctx.beginPath();
+                ctx.arc(x + width * 0.5, height * 0.5, width * 0.15 - pulseOffset * 0.02, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawPlayerBullet(ctx, width, height, frames) {
+            // Player bullet (blue energy bolt)
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.ellipse(width/2, height/2, width/4, height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, 0,
+                width/2, height/2, width/2
+            );
+            gradient.addColorStop(0, 'rgba(96, 165, 250, 0.8)');
+            gradient.addColorStop(1, 'rgba(96, 165, 250, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.ellipse(width/2, height/2, width/2, height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawEnemyBullet(ctx, width, height, frames) {
+            // Enemy bullet (red energy bolt)
+            ctx.fillStyle = '#f87171';
+            ctx.beginPath();
+            ctx.ellipse(width/2, height/2, width/4, height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, 0,
+                width/2, height/2, width/2
+            );
+            gradient.addColorStop(0, 'rgba(248, 113, 113, 0.8)');
+            gradient.addColorStop(1, 'rgba(248, 113, 113, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.ellipse(width/2, height/2, width/2, height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawLaser(ctx, width, height, frames) {
+            // Laser beam (blue energy)
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Core (brighter)
+            ctx.fillStyle = '#93c5fd';
+            ctx.fillRect(width/4, 0, width/2, height);
+            
+            // Glow effect
+            const gradient = ctx.createLinearGradient(0, 0, width, 0);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0)');
+            gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.5)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+        }
+        
+        function drawExplosion(ctx, width, height, frames) {
+            // Draw each frame of explosion
+            for (let frame = 0; frame < frames; frame++) {
+                const x = frame * width;
+                const progress = frame / (frames - 1);
+                const radius = width * 0.4 * (progress < 0.7 ? progress / 0.7 : (1 - progress) / 0.3);
+                
+                // Base explosion circle
+                const gradient = ctx.createRadialGradient(
+                    x + width/2, height/2, 0,
+                    x + width/2, height/2, radius * 1.5
+                );
+                
+                if (progress < 0.5) {
+                    // Expanding phase
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(0.3, '#fcd34d');
+                    gradient.addColorStop(0.6, '#f97316');
+                    gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                } else {
+                    // Fading phase
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, ' + (1 - progress) + ')');
+                    gradient.addColorStop(0.3, 'rgba(252, 211, 77, ' + (1 - progress) + ')');
+                    gradient.addColorStop(0.6, 'rgba(249, 115, 22, ' + (1 - progress) + ')');
+                    gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x + width/2, height/2, radius * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Inner explosion
+                if (progress < 0.7) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(x + width/2, height/2, radius * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Particles
+                if (progress > 0.2 && progress < 0.8) {
+                    ctx.fillStyle = '#fcd34d';
+                    for (let i = 0; i < 10; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = radius * (0.5 + Math.random() * 0.5);
+                        const size = width * 0.03 * (1 - progress);
+                        
+                        ctx.beginPath();
+                        ctx.arc(
+                            x + width/2 + Math.cos(angle) * distance,
+                            height/2 + Math.sin(angle) * distance,
+                            size,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+        
+        function drawPowerupWeapon(ctx, width, height, frames) {
+            // Weapon powerup (red)
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner symbol (gun)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(width * 0.3, height * 0.4, width * 0.4, height * 0.2);
+            ctx.fillRect(width * 0.4, height * 0.3, width * 0.2, height * 0.4);
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, width * 0.2,
+                width/2, height/2, width * 0.5
+            );
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawPowerupShield(ctx, width, height, frames) {
+            // Shield powerup (cyan)
+            ctx.fillStyle = '#06b6d4';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner symbol (shield)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Shield outline
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.25, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, width * 0.2,
+                width/2, height/2, width * 0.5
+            );
+            gradient.addColorStop(0, 'rgba(6, 182, 212, 0.5)');
+            gradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawPowerupSpeed(ctx, width, height, frames) {
+            // Speed powerup (yellow)
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner symbol (lightning bolt)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(width * 0.4, height * 0.3);
+            ctx.lineTo(width * 0.6, height * 0.3);
+            ctx.lineTo(width * 0.5, height * 0.5);
+            ctx.lineTo(width * 0.65, height * 0.5);
+            ctx.lineTo(width * 0.35, height * 0.7);
+            ctx.lineTo(width * 0.45, height * 0.5);
+            ctx.lineTo(width * 0.3, height * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, width * 0.2,
+                width/2, height/2, width * 0.5
+            );
+            gradient.addColorStop(0, 'rgba(250, 204, 21, 0.5)');
+            gradient.addColorStop(1, 'rgba(250, 204, 21, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawPowerupBomb(ctx, width, height, frames) {
+            // Bomb powerup (magenta)
+            ctx.fillStyle = '#d946ef';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner symbol (bomb)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(width/2, height * 0.55, width * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Fuse
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(width/2, height * 0.4);
+            ctx.lineTo(width/2, height * 0.3);
+            ctx.stroke();
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, width * 0.2,
+                width/2, height/2, width * 0.5
+            );
+            gradient.addColorStop(0, 'rgba(217, 70, 239, 0.5)');
+            gradient.addColorStop(1, 'rgba(217, 70, 239, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawPowerupLife(ctx, width, height, frames) {
+            // Life powerup (green)
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Inner symbol (plus)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(width * 0.4, height * 0.3, width * 0.2, height * 0.4);
+            ctx.fillRect(width * 0.3, height * 0.4, width * 0.4, height * 0.2);
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                width/2, height/2, width * 0.2,
+                width/2, height/2, width * 0.5
+            );
+            gradient.addColorStop(0, 'rgba(34, 197, 94, 0.5)');
+            gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawBgStars(ctx, width, height, frames) {
+            // Background stars
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Small stars
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Medium stars
+            ctx.fillStyle = '#f8fafc';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 3 + 2;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Large stars with glow
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                
+                // Star glow
+                const gradient = ctx.createRadialGradient(
+                    x, y, size,
+                    x, y, size * 4
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, size * 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Star core
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawBgNebula(ctx, width, height, frames) {
+            // Transparent background for nebula layer
+            ctx.clearRect(0, 0, width, height);
+            
+            // Create nebula clouds
+            const colors = [
+                'rgba(59, 130, 246, 0.2)',  // Blue
+                'rgba(217, 70, 239, 0.2)',  // Purple
+                'rgba(236, 72, 153, 0.2)'   // Pink
+            ];
+            
+            // Draw nebula clouds
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 300 + 200;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                const gradient = ctx.createRadialGradient(
+                    x, y, 0,
+                    x, y, size
+                );
+                gradient.addColorStop(0, color);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Add some nebula structure
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 5;
+            
+            for (let i = 0; i < 3; i++) {
+                const x1 = Math.random() * width;
+                const y1 = Math.random() * height;
+                const x2 = x1 + (Math.random() - 0.5) * 400;
+                const y2 = y1 + (Math.random() - 0.5) * 400;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.quadraticCurveTo(
+                    (x1 + x2) / 2 + (Math.random() - 0.5) * 200,
+                    (y1 + y2) / 2 + (Math.random() - 0.5) * 200,
+                    x2, y2
+                );
+                ctx.stroke();
+            }
+        }
+        
+        function drawBgPlanets(ctx, width, height, frames) {
+            // Transparent background for planets layer
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw distant planet
+            const planetX = width * 0.8;
+            const planetY = height * 0.3;
+            const planetRadius = 100;
+            
+            // Planet base
+            const planetGradient = ctx.createRadialGradient(
+                planetX - planetRadius * 0.2, planetY - planetRadius * 0.2, 0,
+                planetX, planetY, planetRadius
+            );
+            planetGradient.addColorStop(0, '#f97316');
+            planetGradient.addColorStop(1, '#b45309');
+            
+            ctx.fillStyle = planetGradient;
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, planetRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Planet atmosphere
+            ctx.strokeStyle = 'rgba(249, 115, 22, 0.3)';
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, planetRadius + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Planet details (craters)
+            ctx.fillStyle = 'rgba(120, 53, 15, 0.5)';
+            for (let i = 0; i < 8; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * planetRadius * 0.8;
+                const size = Math.random() * 20 + 5;
+                
+                ctx.beginPath();
+                ctx.arc(
+                    planetX + Math.cos(angle) * distance,
+                    planetY + Math.sin(angle) * distance,
+                    size,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+            
+            // Draw small moon
+            const moonX = planetX + planetRadius * 1.5;
+            const moonY = planetY - planetRadius * 0.5;
+            const moonRadius = 20;
+            
+            ctx.fillStyle = '#d1d5db';
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Moon craters
+            ctx.fillStyle = 'rgba(75, 85, 99, 0.5)';
+            for (let i = 0; i < 3; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * moonRadius * 0.6;
+                const size = Math.random() * 5 + 2;
+                
+                ctx.beginPath();
+                ctx.arc(
+                    moonX + Math.cos(angle) * distance,
+                    moonY + Math.sin(angle) * distance,
+                    size,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+            
+            // Draw distant stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 30; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawLifeIcon(ctx, width, height, frames) {
+            // Life icon (player ship silhouette)
+            ctx.fillStyle = '#4287f5';
+            
+            // Ship body
+            ctx.beginPath();
+            ctx.moveTo(width/2, height * 0.2);
+            ctx.lineTo(width * 0.8, height * 0.8);
+            ctx.lineTo(width * 0.2, height * 0.8);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Wings
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(width * 0.15, height * 0.6, width * 0.7, height * 0.15);
+            
+            // Engine
+            ctx.fillStyle = '#1e40af';
+            ctx.fillRect(width * 0.4, height * 0.75, width * 0.2, height * 0.15);
+            
+            // Cockpit
+            ctx.fillStyle = '#93c5fd';
+            ctx.beginPath();
+            ctx.ellipse(width/2, height * 0.4, width * 0.1, height * 0.1, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawBombIcon(ctx, width, height, frames) {
+            // Bomb icon
+            ctx.fillStyle = '#d946ef';
+            
+            // Bomb body
+            ctx.beginPath();
+            ctx.arc(width/2, height * 0.6, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Bomb fuse
+            ctx.strokeStyle = '#f5d0fe';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(width/2, height * 0.3);
+            ctx.lineTo(width/2, height * 0.1);
+            ctx.stroke();
+            
+            // Fuse spark
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(width/2, height * 0.1, width * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Highlight
+            ctx.fillStyle = '#f0abfc';
+            ctx.beginPath();
+            ctx.arc(width * 0.4, height * 0.5, width * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawTitle(ctx, width, height, frames) {
+            // Game title
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Title text
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Text shadow
+            ctx.fillStyle = '#0284c7';
+            ctx.fillText('COSMIC DEFENDER', width/2 + 3, height/2 + 3);
+            
+            // Main text
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('COSMIC DEFENDER', width/2, height/2);
+            
+            // Subtitle
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#7dd3fc';
+            ctx.fillText('VERTICAL SHOOTER', width/2, height/2 + 40);
+            
+            // Add stars
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    </script>
+</body>
+</html>
