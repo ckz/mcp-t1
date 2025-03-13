@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jampp Campaign Spend Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            margin-bottom: 40px;
+        }
+        .campaign-list {
+            margin-top: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jampp Campaign Spend Visualization</h1>
+        
+        <div class="chart-container">
+            <h2>Daily Spend for UberEats Android US Campaign</h2>
+            <canvas id="dailySpendChart"></canvas>
+        </div>
+        
+        <div class="campaign-list">
+            <h2>All Campaigns (Mar 6 - Mar 13, 2025)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campaign ID</th>
+                        <th>Campaign Name</th>
+                        <th>Total Spend</th>
+                    </tr>
+                </thead>
+                <tbody id="campaignTableBody">
+                    <!-- Campaign data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Daily spend data for UberEats Android US campaign
+        const dailySpendData = {
+            dates: [
+                "2025-03-06", "2025-03-07", "2025-03-08", "2025-03-09", 
+                "2025-03-10", "2025-03-11", "2025-03-12"
+            ],
+            spends: [
+                1721.53, 1717.70, 1723.96, 1723.57, 
+                1722.55, 1723.57, 1728.31
+            ]
+        };
+
+        // All campaigns data
+        const campaignsData = [
+            { id: 28436, name: "UberEats_Android_MX_CPA_DSP_Agency", spend: 7020.25 },
+            { id: 30105, name: "UberRider_Android_IN_CPA_DSP_Agency_19836", spend: 4886.04 },
+            { id: 30498, name: "FeedMob_PossibleFinance_iOS_US_CPM_Agency_AB-test_CPA_Purchase", spend: 0.00 },
+            { id: 31128, name: "UberRider_Android_MX_CPA_DSP_Agency_20624", spend: 1982.99 },
+            { id: 31138, name: "UberRider_Android_BR_CPA_DSP_Agency_20103", spend: 5737.18 },
+            { id: 31148, name: "UberRider_Android_AR_CPA_DSP_Agency_19964", spend: 2453.73 },
+            { id: 31197, name: "UberRider_Android_CA_CPA_DSP_Agency_20104", spend: 2651.22 },
+            { id: 31212, name: "UberRider_Android_UK_CPA_DSP_Agency_19837", spend: 2445.54 },
+            { id: 31229, name: "UberRider_Android_FR_CPA_DSP_Agency_20100", spend: 650.40 },
+            { id: 31243, name: "UberRider_Android_ES_CPA_DSP_Agency_20102", spend: 1880.25 },
+            { id: 32854, name: "UberEats_Android_CA_CPA_DSP_Agency", spend: 14633.97 },
+            { id: 32855, name: "UberEats_Android_US_CPA_DSP_Agency", spend: 12061.18 },
+            { id: 33099, name: "UberEats_Android_UK_CPA_DSP_Agency_19831", spend: 3503.60 },
+            { id: 33100, name: "UberEats_Android_FR_CPA_DSP_Agency", spend: 7819.02 },
+            { id: 33462, name: "TextNow_Android_US_CPM_Agency_21512", spend: 0.00 },
+            { id: 33473, name: "TextNow_iOS_US_CPM_Agency_21513", spend: 2360.50 },
+            { id: 33603, name: "TextNow_Android_US_CPM_Agency_21512", spend: 2252.04 },
+            { id: 33830, name: "PossibleFinance_iOS_US_CPM_Agency_20189", spend: 2243.92 },
+            { id: 34256, name: "UberEats_Android_TW_CPA_DSP_Agency_20107", spend: 90.22 }
+        ];
+
+        // Create daily spend chart
+        const dailySpendCtx = document.getElementById('dailySpendChart').getContext('2d');
+        new Chart(dailySpendCtx, {
+            type: 'line',
+            data: {
+                labels: dailySpendData.dates,
+                datasets: [{
+                    label: 'Daily Spend (USD)',
+                    data: dailySpendData.spends,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Spend (USD)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Populate campaign table
+        const tableBody = document.getElementById('campaignTableBody');
+        
+        // Sort campaigns by spend (descending)
+        campaignsData.sort((a, b) => b.spend - a.spend);
+        
+        campaignsData.forEach(campaign => {
+            const row = document.createElement('tr');
+            
+            const idCell = document.createElement('td');
+            idCell.textContent = campaign.id;
+            row.appendChild(idCell);
+            
+            const nameCell = document.createElement('td');
+            nameCell.textContent = campaign.name;
+            row.appendChild(nameCell);
+            
+            const spendCell = document.createElement('td');
+            spendCell.textContent = `$${campaign.spend.toFixed(2)}`;
+            row.appendChild(spendCell);
+            
+            tableBody.appendChild(row);
+        });
+    </script>
+</body>
+</html>
