@@ -158,7 +158,8 @@ class GameScene extends Phaser.Scene {
         });
         
         this.enemies = this.physics.add.group({
-            runChildUpdate: true
+            runChildUpdate: true,
+            classType: Enemy
         });
         
         this.powerUps = this.physics.add.group({

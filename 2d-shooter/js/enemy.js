@@ -420,26 +420,32 @@ class Boss extends Enemy {
         }
         
         // Camera shake effect
-        this.scene.cameras.main.shake(500, 0.01);
+        if (this.scene && this.scene.cameras && this.scene.cameras.main) {
+            this.scene.cameras.main.shake(500, 0.01);
+        }
         
         // Flash effect
-        this.scene.tweens.add({
-            targets: this,
-            alpha: 0.5,
-            duration: 100,
-            yoyo: true,
-            repeat: 5
-        });
+        if (this.scene && this.scene.tweens) {
+            this.scene.tweens.add({
+                targets: this,
+                alpha: 0.5,
+                duration: 100,
+                yoyo: true,
+                repeat: 5
+            });
+        }
     }
     
     startAttackPattern() {
         // Start attack timer
-        this.attackTimer = this.scene.time.addEvent({
-            delay: this.fireRate,
-            callback: this.fireWeapon,
-            callbackScope: this,
-            loop: true
-        });
+        if (this.scene && this.scene.time) {
+            this.attackTimer = this.scene.time.addEvent({
+                delay: this.fireRate,
+                callback: this.fireWeapon,
+                callbackScope: this,
+                loop: true
+            });
+        }
     }
     
     fireWeapon() {
@@ -557,24 +563,30 @@ class Boss extends Enemy {
         }
         
         // Create multiple explosions
-        for (let i = 0; i < 10; i++) {
-            this.scene.time.delayedCall(i * 200, () => {
-                if (this.scene) {
-                    const x = this.x + Phaser.Math.Between(-50, 50);
-                    const y = this.y + Phaser.Math.Between(-50, 50);
-                    const scale = Phaser.Math.FloatBetween(0.5, 1.5);
-                    
-                    const explosion = new Explosion(this.scene, x, y);
-                    this.scene.explosions.add(explosion);
-                    explosion.setScale(scale);
-                    explosion.play('explosion');
-                    
-                    // Play explosion sound
-                    this.scene.sound.play('sfx-explosion', {
-                        volume: 0.3 * scale
-                    });
-                }
-            });
+        if (this.scene && this.scene.time) {
+            for (let i = 0; i < 10; i++) {
+                this.scene.time.delayedCall(i * 200, () => {
+                    if (this.scene) {
+                        const x = this.x + Phaser.Math.Between(-50, 50);
+                        const y = this.y + Phaser.Math.Between(-50, 50);
+                        const scale = Phaser.Math.FloatBetween(0.5, 1.5);
+                        
+                        const explosion = new Explosion(this.scene, x, y);
+                        if (this.scene.explosions) {
+                            this.scene.explosions.add(explosion);
+                        }
+                        explosion.setScale(scale);
+                        explosion.play('explosion');
+                        
+                        // Play explosion sound
+                        if (this.scene.sound) {
+                            this.scene.sound.play('sfx-explosion', {
+                                volume: 0.3 * scale
+                            });
+                        }
+                    }
+                });
+            }
         }
         
         // Call parent destroy method
@@ -582,46 +594,4 @@ class Boss extends Enemy {
     }
 }
 
-/**
- * EnemyBullet Class
- * Projectiles fired by enemies
- */
-class EnemyBullet extends Entity {
-    constructor(scene, x, y) {
-        super(scene, x, y, 'bullet-enemy', 'enemy-bullet');
-        
-        // Set bullet properties
-        this.speed = 300;
-        this.damage = 1;
-        
-        // Set bullet physics
-        this.setScale(0.8);
-        this.body.setSize(10, 10);
-        
-        // Deactivate initially
-        this.setActive(false);
-        this.setVisible(false);
-    }
-    
-    fire(dirX, dirY) {
-        // Activate bullet
-        this.setActive(true);
-        this.setVisible(true);
-        
-        // Set velocity
-        this.setVelocity(dirX * this.speed, dirY * this.speed);
-        
-        // Set rotation to match direction
-        if (dirX !== 0) {
-            this.setRotation(Math.atan2(dirY, dirX));
-        }
-    }
-    
-    update(time, delta) {
-        // Check if bullet is out of bounds
-        if (this.y < -50 || this.y > config.height + 50 || 
-            this.x < -50 || this.x > config.width + 50) {
-            this.destroy();
-        }
-    }
-}
+// Note: EnemyBullet class is now defined in bullet.js

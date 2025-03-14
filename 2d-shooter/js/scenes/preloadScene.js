@@ -63,15 +63,15 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('title', 'assets/images/title.png');
         
         // Load audio
-        this.load.audio('music-menu', 'assets/audio/music-menu.mp3');
-        this.load.audio('music-game', 'assets/audio/music-game.mp3');
-        this.load.audio('music-boss', 'assets/audio/music-boss.mp3');
-        this.load.audio('sfx-explosion', 'assets/audio/sfx-explosion.mp3');
-        this.load.audio('sfx-laser', 'assets/audio/sfx-laser.mp3');
-        this.load.audio('sfx-powerup', 'assets/audio/sfx-powerup.mp3');
-        this.load.audio('sfx-player-hit', 'assets/audio/sfx-player-hit.mp3');
-        this.load.audio('sfx-enemy-hit', 'assets/audio/sfx-enemy-hit.mp3');
-        this.load.audio('sfx-bomb', 'assets/audio/sfx-bomb.mp3');
+        this.load.audio('music-menu', 'assets/audio/music-menu.wav');
+        this.load.audio('music-game', 'assets/audio/music-game.wav');
+        this.load.audio('music-boss', 'assets/audio/music-boss.wav');
+        this.load.audio('sfx-explosion', 'assets/audio/sfx-explosion.wav');
+        this.load.audio('sfx-laser', 'assets/audio/sfx-laser.wav');
+        this.load.audio('sfx-powerup', 'assets/audio/sfx-powerup.wav');
+        this.load.audio('sfx-player-hit', 'assets/audio/sfx-player-hit.wav');
+        this.load.audio('sfx-enemy-hit', 'assets/audio/sfx-enemy-hit.wav');
+        this.load.audio('sfx-bomb', 'assets/audio/sfx-bomb.wav');
     }
 
     create() {

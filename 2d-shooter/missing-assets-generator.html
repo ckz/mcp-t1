@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Shooter Missing Assets Generator</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .asset {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #444;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .download-all {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>2D Shooter Missing Assets Generator</h1>
+    <p>This tool generates the missing assets needed for the game. Click on each asset to download it, or use the "Download All" button to get all assets at once.</p>
+    
+    <div class="container" id="asset-container">
+        <!-- Assets will be generated here -->
+    </div>
+    
+    <button class="download-all" onclick="downloadAll()">Download All Assets</button>
+    
+    <script>
+        // Asset definitions - only the missing ones
+        const assets = [
+            { name: 'logo', width: 400, height: 100, frames: 1, draw: drawLogo },
+            { name: 'loading-background', width: 800, height: 600, frames: 1, draw: drawLoadingBackground },
+            { name: 'title', width: 400, height: 100, frames: 1, draw: drawTitle },
+            { name: 'bg-stars', width: 800, height: 600, frames: 1, draw: drawBgStars },
+            { name: 'bg-nebula', width: 800, height: 600, frames: 1, draw: drawBgNebula },
+            { name: 'bg-planets', width: 800, height: 600, frames: 1, draw: drawBgPlanets },
+            { name: 'powerup-weapon', width: 32, height: 32, frames: 1, draw: drawPowerupWeapon },
+            { name: 'powerup-shield', width: 32, height: 32, frames: 1, draw: drawPowerupShield },
+            { name: 'powerup-speed', width: 32, height: 32, frames: 1, draw: drawPowerupSpeed },
+            { name: 'powerup-bomb', width: 32, height: 32, frames: 1, draw: drawPowerupBomb },
+            { name: 'powerup-life', width: 32, height: 32, frames: 1, draw: drawPowerupLife },
+            { name: 'life-icon', width: 32, height: 32, frames: 1, draw: drawLifeIcon },
+            { name: 'bomb-icon', width: 32, height: 32, frames: 1, draw: drawBombIcon }
+        ];
+        
+        // Initialize
+        window.onload = function() {
+            generateAssets();
+        };
+        
+        // Generate all assets
+        function generateAssets() {
+            const container = document.getElementById('asset-container');
+            
+            assets.forEach(asset => {
+                // Create asset container
+                const assetDiv = document.createElement('div');
+                assetDiv.className = 'asset';
+                
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = asset.width * asset.frames;
+                canvas.height = asset.height;
+                canvas.id = asset.name;
+                
+                // Draw asset
+                const ctx = canvas.getContext('2d');
+                asset.draw(ctx, asset.width, asset.height, asset.frames);
+                
+                // Add title
+                const title = document.createElement('h3');
+                title.textContent = asset.name;
+                
+                // Add download button
+                const button = document.createElement('button');
+                button.textContent = 'Download';
+                button.onclick = function() {
+                    downloadAsset(asset.name);
+                };
+                
+                // Add to container
+                assetDiv.appendChild(title);
+                assetDiv.appendChild(canvas);
+                assetDiv.appendChild(button);
+                container.appendChild(assetDiv);
+            });
+        }
+        
+        // Download a single asset
+        function downloadAsset(name) {
+            const canvas = document.getElementById(name);
+            const link = document.createElement('a');
+            link.download = name + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Download all assets
+        function downloadAll() {
+            assets.forEach(asset => {
+                downloadAsset(asset.name);
+            });
+        }
+        
+        // Drawing functions for each missing asset
+        function drawLogo(ctx, width, height) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('COSMIC DEFENDER', width/2, height/2);
+        }
+        
+        function drawLoadingBackground(ctx, width, height) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawTitle(ctx, width, height) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('COSMIC DEFENDER', width/2, height/2);
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#7dd3fc';
+            ctx.fillText('VERTICAL SHOOTER', width/2, height/2 + 40);
+        }
+        
+        function drawBgStars(ctx, width, height) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawBgNebula(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            const colors = ['rgba(59, 130, 246, 0.2)', 'rgba(217, 70, 239, 0.2)', 'rgba(236, 72, 153, 0.2)'];
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 300 + 200;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+                gradient.addColorStop(0, color);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawBgPlanets(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            const planetX = width * 0.8;
+            const planetY = height * 0.3;
+            const planetRadius = 100;
+            const gradient = ctx.createRadialGradient(planetX, planetY, 0, planetX, planetY, planetRadius);
+            gradient.addColorStop(0, '#f97316');
+            gradient.addColorStop(1, '#b45309');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, planetRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawPowerupWeapon(ctx, width, height) {
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(width * 0.3, height * 0.4, width * 0.4, height * 0.2);
+            ctx.fillRect(width * 0.4, height * 0.3, width * 0.2, height * 0.4);
+        }
+        
+        function drawPowerupShield(ctx, width, height) {
+            ctx.fillStyle = '#06b6d4';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawPowerupSpeed(ctx, width, height) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(width * 0.4, height * 0.3);
+            ctx.lineTo(width * 0.6, height * 0.3);
+            ctx.lineTo(width * 0.5, height * 0.5);
+            ctx.lineTo(width * 0.65, height * 0.5);
+            ctx.lineTo(width * 0.35, height * 0.7);
+            ctx.lineTo(width * 0.45, height * 0.5);
+            ctx.lineTo(width * 0.3, height * 0.5);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        function drawPowerupBomb(ctx, width, height) {
+            ctx.fillStyle = '#d946ef';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(width/2, height * 0.55, width * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(width/2, height * 0.4);
+            ctx.lineTo(width/2, height * 0.3);
+            ctx.stroke();
+        }
+        
+        function drawPowerupLife(ctx, width, height) {
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(width * 0.4, height * 0.3, width * 0.2, height * 0.4);
+            ctx.fillRect(width * 0.3, height * 0.4, width * 0.4, height * 0.2);
+        }
+        
+        function drawLifeIcon(ctx, width, height) {
+            ctx.fillStyle = '#4287f5';
+            ctx.beginPath();
+            ctx.moveTo(width/2, height * 0.2);
+            ctx.lineTo(width * 0.8, height * 0.8);
+            ctx.lineTo(width * 0.2, height * 0.8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#93c5fd';
+            ctx.beginPath();
+            ctx.ellipse(width/2, height * 0.4, width * 0.1, height * 0.1, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawBombIcon(ctx, width, height) {
+            ctx.fillStyle = '#d946ef';
+            ctx.beginPath();
+            ctx.arc(width/2, height * 0.6, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#f5d0fe';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(width/2, height * 0.3);
+            ctx.lineTo(width/2, height * 0.1);
+            ctx.stroke();
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.arc(width/2, height * 0.1, width * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    </script>
+</body>
+</html>
