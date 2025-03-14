@@ -514,20 +514,23 @@ class GameScene extends Phaser.Scene {
                 // Destroy current player
                 this.player.destroy();
                 
-                // Respawn player after a delay
-                this.time.delayedCall(1000, () => {
-                    // Create new player
-                    this.createPlayer();
-                    
-                    // Restore player position and weapon data
-                    this.player.x = playerX;
-                    this.player.y = playerY;
-                    this.player.weaponLevel = weaponLevel;
-                    this.player.weaponType = weaponType;
-                    
-                    // Make player invulnerable temporarily
-                    this.player.setInvulnerable();
-                });
+            // Respawn player after a delay
+            this.time.delayedCall(1000, () => {
+                // Create new player
+                this.createPlayer();
+                
+                // Restore player position and weapon data
+                this.player.x = playerX;
+                this.player.y = playerY;
+                this.player.weaponLevel = weaponLevel;
+                this.player.weaponType = weaponType;
+                
+                // Make player invulnerable temporarily
+                this.player.setInvulnerable();
+                
+                // Re-setup collisions for the new player instance
+                this.setupCollisions();
+            });
             } else {
                 // Make player invulnerable temporarily
                 this.player.setInvulnerable();
