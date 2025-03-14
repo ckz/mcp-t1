@@ -164,7 +164,7 @@ class Player extends Entity {
             if (bullet) {
                 bullet.fire(0, -1);
                 bullet.setScale(2, 3); // Make laser bigger
-                bullet.damage = GAME_SETTINGS.weapons.laser.damage;
+                bullet.attackPower = GAME_SETTINGS.weapons.laser.damage;
             }
         }
     }
@@ -294,17 +294,27 @@ class Player extends Entity {
         this.isInvulnerable = true;
         
         // Flash effect
-        this.scene.tweens.add({
-            targets: this,
-            alpha: 0.5,
-            duration: 100,
-            yoyo: true,
-            repeat: 10,
-            onComplete: () => {
+        if (this.scene && this.scene.tweens) {
+            this.scene.tweens.add({
+                targets: this,
+                alpha: 0.5,
+                duration: 100,
+                yoyo: true,
+                repeat: 10,
+                onComplete: () => {
+                    this.alpha = 1;
+                    this.isInvulnerable = false;
+                }
+            });
+        } else {
+            // Fallback if tweens not available
+            this.alpha = 0.5;
+            // Set a timeout to restore alpha and remove invulnerability
+            setTimeout(() => {
                 this.alpha = 1;
                 this.isInvulnerable = false;
-            }
-        });
+            }, 1000);
+        }
     }
     
     createEngineParticles() {

@@ -8,7 +8,7 @@ class Bullet extends Entity {
         
         // Set default bullet properties
         this.speed = 300;
-        this.damage = 1;
+        this.attackPower = 1;  // Renamed from damage to avoid method name conflict
         this.lifespan = 2000; // ms
         this.born = 0;
         
@@ -64,7 +64,7 @@ class PlayerBullet extends Bullet {
         
         // Set bullet properties
         this.speed = GAME_SETTINGS.weapons.basic.speed;
-        this.damage = GAME_SETTINGS.weapons.basic.damage;
+        this.attackPower = GAME_SETTINGS.weapons.basic.damage;
         
         // Add trail effect
         this.createTrailEffect();
@@ -138,7 +138,7 @@ class EnemyBullet extends Bullet {
         
         // Set bullet properties
         this.speed = 300;
-        this.damage = 1;
+        this.attackPower = 1;
         
         // Add trail effect
         this.createTrailEffect();
@@ -177,7 +177,7 @@ class LaserBullet extends Bullet {
         
         // Set bullet properties
         this.speed = GAME_SETTINGS.weapons.laser.speed;
-        this.damage = GAME_SETTINGS.weapons.laser.damage;
+        this.attackPower = GAME_SETTINGS.weapons.laser.damage;
         
         // Set physics properties
         this.setScale(1, 3);
@@ -219,7 +219,7 @@ class BossBullet extends EnemyBullet {
         super(scene, x, y);
         
         // Set bullet properties
-        this.damage = 2;
+        this.attackPower = 2;
         this.setScale(1.5);
         
         // Set tint based on boss phase
@@ -269,15 +269,15 @@ class BulletManager {
             // Set bullet properties based on type
             switch (type) {
                 case 'spread':
-                    bullet.damage = GAME_SETTINGS.weapons.spread.damage;
+                    bullet.attackPower = GAME_SETTINGS.weapons.spread.damage;
                     bullet.speed = GAME_SETTINGS.weapons.spread.speed;
                     break;
                 case 'laser':
-                    bullet.damage = GAME_SETTINGS.weapons.laser.damage;
+                    bullet.attackPower = GAME_SETTINGS.weapons.laser.damage;
                     bullet.speed = GAME_SETTINGS.weapons.laser.speed;
                     break;
                 case 'homing':
-                    bullet.damage = GAME_SETTINGS.weapons.homing.damage;
+                    bullet.attackPower = GAME_SETTINGS.weapons.homing.damage;
                     bullet.speed = GAME_SETTINGS.weapons.homing.speed;
                     
                     // Find closest enemy for homing
@@ -300,7 +300,7 @@ class BulletManager {
                     }
                     break;
                 default:
-                    bullet.damage = GAME_SETTINGS.weapons.basic.damage;
+                    bullet.attackPower = GAME_SETTINGS.weapons.basic.damage;
                     bullet.speed = GAME_SETTINGS.weapons.basic.speed;
             }
             

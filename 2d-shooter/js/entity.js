@@ -17,7 +17,7 @@ class Entity extends Phaser.Physics.Arcade.Sprite {
         this.health = 1;
         this.maxHealth = 1;
         this.speed = 0;
-        this.damage = 1;
+        this.attackPower = 1;  // Renamed from damage to avoid method name conflict
         this.isDestroyed = false;
     }
     

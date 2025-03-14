@@ -310,48 +310,85 @@ class GameScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Flash warning text
-        this.tweens.add({
-            targets: warningText,
-            alpha: 0,
-            duration: 500,
-            yoyo: true,
-            repeat: 5,
-            onComplete: () => {
-                warningText.destroy();
-                
-                // Switch to boss music
-                this.gameMusic.stop();
-                this.gameMusic = this.sound.add('music-boss', {
-                    volume: 0.5,
-                    loop: true
-                });
-                this.gameMusic.play();
-                
-                // Spawn the boss
-                const boss = new Boss(this, config.width / 2, -100, 'boss');
-                this.enemies.add(boss);
-                boss.play('boss-idle');
-                
-                // Notify UI scene
-                this.scene.get('UIScene').showBossHealth(boss);
-                
-                // Move boss into position
-                this.tweens.add({
-                    targets: boss,
-                    y: 150,
-                    duration: 2000,
-                    ease: 'Power2',
-                    onComplete: () => {
+        if (this.tweens) {
+            this.tweens.add({
+                targets: warningText,
+                alpha: 0,
+                duration: 500,
+                yoyo: true,
+                repeat: 5,
+                onComplete: () => {
+                    warningText.destroy();
+                    
+                    // Switch to boss music
+                    this.gameMusic.stop();
+                    this.gameMusic = this.sound.add('music-boss', {
+                        volume: 0.5,
+                        loop: true
+                    });
+                    this.gameMusic.play();
+                    
+                    // Spawn the boss
+                    const boss = new Boss(this, config.width / 2, -100, 'boss');
+                    this.enemies.add(boss);
+                    boss.play('boss-idle');
+                    
+                    // Notify UI scene
+                    this.scene.get('UIScene').showBossHealth(boss);
+                    
+                    // Move boss into position
+                    if (this.tweens) {
+                        this.tweens.add({
+                            targets: boss,
+                            y: 150,
+                            duration: 2000,
+                            ease: 'Power2',
+                            onComplete: () => {
+                                boss.startAttackPattern();
+                            }
+                        });
+                    } else {
+                        // Fallback if tweens not available
+                        boss.y = 150;
                         boss.startAttackPattern();
                     }
-                });
-            }
-        });
+                }
+            });
+        } else {
+            // Fallback if tweens not available
+            warningText.destroy();
+            
+            // Switch to boss music
+            this.gameMusic.stop();
+            this.gameMusic = this.sound.add('music-boss', {
+                volume: 0.5,
+                loop: true
+            });
+            this.gameMusic.play();
+            
+            // Spawn the boss
+            const boss = new Boss(this, config.width / 2, 150, 'boss');
+            this.enemies.add(boss);
+            boss.play('boss-idle');
+            
+            // Notify UI scene
+            this.scene.get('UIScene').showBossHealth(boss);
+            
+            // Start attack pattern
+            boss.startAttackPattern();
+        }
     }
     
     playerBulletHitEnemy(bullet, enemy) {
+        // Check if enemy has damage method
+        if (typeof enemy.damage !== 'function') {
+            console.warn('Enemy does not have damage method:', enemy);
+            bullet.destroy();
+            return;
+        }
+        
         // Apply damage to enemy
-        enemy.damage(bullet.damage);
+        enemy.damage(bullet.attackPower);
         
         // Destroy bullet
         bullet.destroy();
@@ -398,16 +435,19 @@ class GameScene extends Phaser.Scene {
         // Damage player
         this.damagePlayer();
         
-        // Damage enemy
-        enemy.damage(1);
-        
-        // Check if enemy is destroyed
-        if (enemy.health <= 0) {
-            // Create explosion
-            this.createExplosion(enemy.x, enemy.y);
+        // Check if enemy has damage method
+        if (typeof enemy.damage === 'function') {
+            // Damage enemy
+            enemy.damage(1);
             
-            // Destroy enemy
-            enemy.destroy();
+            // Check if enemy is destroyed
+            if (enemy.health <= 0) {
+                // Create explosion
+                this.createExplosion(enemy.x, enemy.y);
+                
+                // Destroy enemy
+                enemy.destroy();
+            }
         }
     }
     
@@ -460,8 +500,38 @@ class GameScene extends Phaser.Scene {
             this.createExplosion(this.player.x, this.player.y);
             this.gameOverSequence();
         } else {
-            // Make player invulnerable temporarily
-            this.player.setInvulnerable();
+            // Store player position and data before potential destruction
+            const playerX = this.player.x;
+            const playerY = this.player.y;
+            const weaponLevel = this.player.weaponLevel;
+            const weaponType = this.player.weaponType;
+            
+            // Check if player health is zero (destroyed)
+            if (this.player.health <= 0) {
+                // Create full explosion
+                this.createExplosion(playerX, playerY);
+                
+                // Destroy current player
+                this.player.destroy();
+                
+                // Respawn player after a delay
+                this.time.delayedCall(1000, () => {
+                    // Create new player
+                    this.createPlayer();
+                    
+                    // Restore player position and weapon data
+                    this.player.x = playerX;
+                    this.player.y = playerY;
+                    this.player.weaponLevel = weaponLevel;
+                    this.player.weaponType = weaponType;
+                    
+                    // Make player invulnerable temporarily
+                    this.player.setInvulnerable();
+                });
+            } else {
+                // Make player invulnerable temporarily
+                this.player.setInvulnerable();
+            }
         }
     }
     
@@ -485,32 +555,42 @@ class GameScene extends Phaser.Scene {
         );
         
         // Expand bomb effect
-        this.tweens.add({
-            targets: bombEffect,
-            radius: 400,
-            alpha: 0,
-            duration: 1000,
-            onComplete: () => {
+        if (this.tweens) {
+            this.tweens.add({
+                targets: bombEffect,
+                radius: 400,
+                alpha: 0,
+                duration: 1000,
+                onComplete: () => {
+                    bombEffect.destroy();
+                }
+            });
+        } else {
+            // Fallback if tweens not available
+            setTimeout(() => {
                 bombEffect.destroy();
-            }
-        });
+            }, 1000);
+        }
         
         // Destroy all enemy bullets
         this.enemyBullets.clear(true, true);
         
         // Damage all enemies
         this.enemies.getChildren().forEach(enemy => {
-            enemy.damage(enemy.isBoss ? 10 : enemy.health);
-            
-            if (enemy.health <= 0) {
-                // Add score
-                this.addScore(enemy.score);
+            // Check if enemy has damage method
+            if (typeof enemy.damage === 'function') {
+                enemy.damage(enemy.isBoss ? 10 : enemy.health);
                 
-                // Create explosion
-                this.createExplosion(enemy.x, enemy.y);
-                
-                // Destroy enemy
-                enemy.destroy();
+                if (enemy.health <= 0) {
+                    // Add score
+                    this.addScore(enemy.score);
+                    
+                    // Create explosion
+                    this.createExplosion(enemy.x, enemy.y);
+                    
+                    // Destroy enemy
+                    enemy.destroy();
+                }
             }
         });
         
