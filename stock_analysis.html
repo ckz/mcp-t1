@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA & Tesla Stock Analysis</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+        .stock-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .stock-card {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .stock-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .stock-logo {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+            border-radius: 50%;
+            background-color: #f1f1f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .nvidia-logo {
+            background-color: #76b900;
+            color: white;
+        }
+        .tesla-logo {
+            background-color: #e82127;
+            color: white;
+        }
+        .stock-title {
+            flex: 1;
+        }
+        .stock-title h3 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .stock-title p {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+        }
+        .price-info {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .price-box {
+            text-align: center;
+        }
+        .price-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .price-change {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .positive {
+            color: #2ecc71;
+        }
+        .negative {
+            color: #e74c3c;
+        }
+        .chart {
+            height: 200px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .nvidia-chart {
+            background: linear-gradient(180deg, rgba(118,185,0,0.1) 0%, rgba(118,185,0,0) 100%);
+            clip-path: polygon(0 80%, 10% 75%, 20% 85%, 30% 60%, 40% 70%, 50% 40%, 60% 45%, 70% 30%, 80% 20%, 90% 25%, 100% 10%, 100% 100%, 0 100%);
+        }
+        .tesla-chart {
+            background: linear-gradient(180deg, rgba(232,33,39,0.1) 0%, rgba(232,33,39,0) 100%);
+            clip-path: polygon(0 50%, 10% 55%, 20% 45%, 30% 60%, 40% 40%, 50% 45%, 60% 30%, 70% 35%, 80% 60%, 90% 80%, 100% 70%, 100% 100%, 0 100%);
+        }
+        .chart-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-bottom: 2px solid #ddd;
+        }
+        .nvidia-line {
+            border-bottom: 3px solid #76b900 !important;
+        }
+        .tesla-line {
+            border-bottom: 3px solid #e82127 !important;
+        }
+        .prediction-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .prediction-table th, .prediction-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .prediction-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .factors {
+            margin: 20px 0;
+        }
+        .factor-item {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .factor-item::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .conclusion {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 30px;
+        }
+        .disclaimer {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        @media (max-width: 768px) {
+            .stock-container {
+                flex-direction: column;
+            }
+            .stock-card {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stock Analysis: NVIDIA & Tesla</h1>
+        <p>Price Movement and Future Predictions</p>
+        <p><small>Analysis Date: March 14, 2025</small></p>
+    </header>
+
+    <div class="stock-container">
+        <!-- NVIDIA Stock Card -->
+        <div class="stock-card">
+            <div class="stock-header">
+                <div class="stock-logo nvidia-logo">NVDA</div>
+                <div class="stock-title">
+                    <h3>NVIDIA Corporation</h3>
+                    <p>NASDAQ: NVDA</p>
+                </div>
+            </div>
+
+            <div class="price-info">
+                <div class="price-box">
+                    <div class="price-label">Current Price</div>
+                    <div class="price-value">$124.81</div>
+                </div>
+                <div class="price-box">
+                    <div class="price-label">YTD Change</div>
+                    <div class="price-value negative">-13.63%</div>
+                </div>
+                <div class="price-box">
+                    <div class="price-label">Q4 Revenue</div>
+                    <div class="price-value positive">+78%</div>
+                </div>
+            </div>
+
+            <h3>Recent Performance</h3>
+            <p>NVIDIA has seen significant growth in recent years, driven primarily by the AI boom. In Q4 2024, revenue grew 78% to $39.3 billion, beating analyst estimates. However, the stock is down 13.63% year-to-date in 2025, showing some correction after the massive gains of previous years.</p>
+            
+            <div class="chart">
+                <div class="chart-line nvidia-chart"></div>
+                <div class="chart-line nvidia-line"></div>
+            </div>
+
+            <h3>Market Trends & Factors</h3>
+            <div class="factors">
+                <div class="factor-item">Dominance in the AI chip market, which could reach $400 billion in annual revenue within five years</div>
+                <div class="factor-item">Facing increased competition in the AI chip space</div>
+                <div class="factor-item">Potential risks from export restrictions to China, Singapore, and Vietnam</div>
+                <div class="factor-item">Market capitalization grew from $1.2 trillion to $3.28 trillion in 2024</div>
+                <div class="factor-item">Upcoming dividend payment of $0.0100 (ex-dividend date: March 12, 2025)</div>
+            </div>
+
+            <h3>Price Predictions (2025-2030)</h3>
+            <div class="prediction-table">
+                <table>
+                    <tr>
+                        <th>Timeframe</th>
+                        <th>Low Estimate</th>
+                        <th>Average Target</th>
+                        <th>High Estimate</th>
+                    </tr>
+                    <tr>
+                        <td>End of 2025</td>
+                        <td>$92.36</td>
+                        <td>$140.00</td>
+                        <td>$171.69</td>
+                    </tr>
+                    <tr>
+                        <td>12-Month Target</td>
+                        <td>$120.00</td>
+                        <td>$174.71</td>
+                        <td>$220.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="conclusion">
+                <h3>Investment Outlook</h3>
+                <p>Despite the recent price correction, NVIDIA maintains a strong position in the AI chip market with significant growth potential. Analysts remain optimistic about sustained strong performance in 2025, with an average 12-month price target of $174.71, representing a potential upside of over 40% from current levels. However, investors should be aware of increasing competition and potential regulatory challenges.</p>
+            </div>
+        </div>
+
+        <!-- Tesla Stock Card -->
+        <div class="stock-card">
+            <div class="stock-header">
+                <div class="stock-logo tesla-logo">TSLA</div>
+                <div class="stock-title">
+                    <h3>Tesla, Inc.</h3>
+                    <p>NASDAQ: TSLA</p>
+                </div>
+            </div>
+
+            <div class="price-info">
+                <div class="price-box">
+                    <div class="price-label">Current Price</div>
+                    <div class="price-value">$240.68</div>
+                </div>
+                <div class="price-box">
+                    <div class="price-label">3-Month Change</div>
+                    <div class="price-value negative">-50%</div>
+                </div>
+                <div class="price-box">
+                    <div class="price-label">Analyst Rating</div>
+                    <div class="price-value">2.74/5</div>
+                </div>
+            </div>
+
+            <h3>Recent Performance</h3>
+            <p>Tesla's stock has experienced significant volatility, dropping by nearly 50% in the past three months. The company faces challenges from increased competition in the electric vehicle market, production issues, and controversies surrounding CEO Elon Musk. The cheapest new Tesla on sale in 2025 is the Model 3, which costs more than $40,000 after estimated taxes and fees.</p>
+            
+            <div class="chart">
+                <div class="chart-line tesla-chart"></div>
+                <div class="chart-line tesla-line"></div>
+            </div>
+
+            <h3>Market Trends & Factors</h3>
+            <div class="factors">
+                <div class="factor-item">Increasing competition in the electric vehicle market</div>
+                <div class="factor-item">Tesla's pool is not meeting the 2025 emissions targets in Europe</div>
+                <div class="factor-item">Resale values have dropped about 10% since August 2024</div>
+                <div class="factor-item">Political controversies surrounding CEO Elon Musk affecting stock performance</div>
+                <div class="factor-item">Next quarter EPS is expected to reach $0.54 USD</div>
+            </div>
+
+            <h3>Price Predictions (2025-2030)</h3>
+            <div class="prediction-table">
+                <table>
+                    <tr>
+                        <th>Timeframe</th>
+                        <th>Low Estimate</th>
+                        <th>Average Target</th>
+                        <th>High Estimate</th>
+                    </tr>
+                    <tr>
+                        <td>2025 Range</td>
+                        <td>$194.81</td>
+                        <td>$299.40</td>
+                        <td>$457.06</td>
+                    </tr>
+                    <tr>
+                        <td>12-Month Target</td>
+                        <td>$24.86</td>
+                        <td>$308.62</td>
+                        <td>$550.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="conclusion">
+                <h3>Investment Outlook</h3>
+                <p>Tesla presents a mixed investment opportunity with high volatility. While the average 12-month price target of $308.62 suggests a potential upside of 28.23% from current levels, the wide range of analyst estimates (from $24.86 to $550.00) indicates significant uncertainty. The company's future performance will likely depend on its ability to navigate increased competition, production challenges, and the impact of CEO Elon Musk's public persona on the brand.</p>
+            </div>
+        </div>
+    </div>
+
+    <h2>Comparative Analysis</h2>
+    <p>Both NVIDIA and Tesla have been at the forefront of technological innovation in their respective industries, but they face different challenges and opportunities in 2025:</p>
+    
+    <div class="factors">
+        <div class="factor-item"><strong>NVIDIA</strong> continues to benefit from the AI boom with strong revenue growth, despite recent stock price corrections. The company's dominance in the AI chip market positions it well for future growth, though increasing competition and potential regulatory challenges pose risks.</div>
+        <div class="factor-item"><strong>Tesla</strong> faces more significant headwinds, including increased competition in the EV market, production challenges, and controversies surrounding its CEO. The stock has experienced substantial volatility, with a much wider range of analyst price targets reflecting greater uncertainty about its future performance.</div>
+    </div>
+
+    <h2>Investment Considerations</h2>
+    <p>When considering investments in NVIDIA and Tesla, investors should keep the following factors in mind:</p>
+    
+    <div class="factors">
+        <div class="factor-item"><strong>Risk Tolerance:</strong> NVIDIA currently presents a more stable investment opportunity with stronger analyst consensus, while Tesla offers potentially higher rewards but with significantly higher volatility and risk.</div>
+        <div class="factor-item"><strong>Industry Outlook:</strong> Both AI and electric vehicles are expected to see continued growth, but AI adoption may be accelerating more rapidly in the near term.</div>
+        <div class="factor-item"><strong>Competitive Landscape:</strong> NVIDIA faces emerging competition but maintains a strong market position, while Tesla's competitive advantage has been eroding as traditional automakers expand their EV offerings.</div>
+        <div class="factor-item"><strong>Valuation:</strong> Both stocks trade at premium valuations relative to their respective industries, requiring strong future growth to justify current prices.</div>
+    </div>
+
+    <div class="disclaimer">
+        <p><strong>Disclaimer:</strong> This analysis is based on publicly available information as of March 14, 2025, and should not be considered as financial advice. Stock markets are inherently risky, and past performance is not indicative of future results. Always conduct your own research or consult with a financial advisor before making investment decisions.</p>
+    </div>
+</body>
+</html>
