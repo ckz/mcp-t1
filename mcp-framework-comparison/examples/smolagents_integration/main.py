@@ -188,7 +188,7 @@ def create_mcp_knowledge_tool(client: MCPClient) -> Tool:
         # Parse the query to extract topic and subtopic
         parts = query.split(" about ")
         if len(parts) > 1:
-            topic = parts[1].strip()
+            topic = parts[1].strip().lower()  # Convert to lowercase
             
             # Check if there's a subtopic
             topic_parts = topic.split(" specifically ")
@@ -469,8 +469,10 @@ def run_smolagents_example():
         # First, search the knowledge base
         knowledge_result = json.loads(knowledge_tool(query))
         
-        # Then, get a document related to the query
-        document_result = json.loads(document_tool(f"search documents for {query}"))
+        # Then, search for documents related to the query
+        # Convert query to lowercase for better matching
+        search_query = query.lower()
+        document_result = json.loads(document_tool(f"search documents for {search_query}"))
         
         # Combine the results
         combined_result = {
