@@ -76,24 +76,50 @@ class AssistantAgent(ConversableAgent):
         # Store the message but don't call super().receive() to avoid recursion
         self.messages.append({"role": "assistant", "content": message})
         
-        # Generate a response based on the message
-        # This is a simplified implementation for demonstration
-        if "knowledge base" in message.lower():
-            response = "I'll search the knowledge base for that information."
-        elif "data analysis" in message.lower():
-            response = "I'll analyze the data for you."
-        elif "document" in message.lower():
-            response = "I'll process the document for you."
-        elif "web search" in message.lower():
-            response = "I'll search the web for that information."
-        else:
-            response = "I'll help you with that."
+        # Store the message
+        self.messages.append({"role": "assistant", "content": message})
         
-        # Add the response to our messages
-        self.messages.append({"role": "user", "content": response})
-        
-        # Add the response to the sender's messages
-        sender.messages.append({"role": "assistant", "content": response})
+        # Check if we have access to MCP functions through the sender
+        if isinstance(sender, UserProxyAgent) and sender.function_map:
+            message_lower = message.lower()
+            
+            # Handle knowledge base queries
+            if "information about" in message_lower or "tell me about" in message_lower:
+                for framework in ["llamaindex", "langchain", "smolagents", "autogen"]:
+                    if framework in message_lower:
+                        result = sender.function_map["mcp_knowledge_base"](
+                            topic="ai_frameworks",
+                            subtopic=framework
+                        )
+                        response = f"Here's what I found about {framework}:\n{result}"
+                        break
+                else:
+                    if "mcp" in message_lower:
+                        result = sender.function_map["mcp_knowledge_base"](topic="mcp")
+                        response = f"Here's what I found about MCP:\n{result}"
+                    else:
+                        response = "I'll help you with that."
+            
+            # Handle document queries
+            elif "summarize" in message_lower and "guide" in message_lower:
+                for framework in ["llamaindex", "langchain", "smolagents", "autogen"]:
+                    if framework in message_lower:
+                        result = sender.function_map["mcp_document_processing"](
+                            operation="summarize",
+                            document_id=f"{framework}_guide"
+                        )
+                        response = f"Here's a summary of the {framework} guide:\n{result}"
+                        break
+                else:
+                    response = "I'll help you with that."
+            
+            # Default response
+            else:
+                response = "I'll help you with that."
+            
+            # Add the response
+            self.messages.append({"role": "user", "content": response})
+            sender.messages.append({"role": "assistant", "content": response})
 
 
 class UserProxyAgent(ConversableAgent):
@@ -131,17 +157,48 @@ class UserProxyAgent(ConversableAgent):
         # Check if the message contains a function call
         for func_name, func in self.function_map.items():
             if func_name.lower() in message.lower():
-                # Extract parameters from the message
-                # This is a simplified implementation for demonstration
+                # Parse the message to extract function parameters
                 params = {}
-                if "query" in message.lower():
-                    params["query"] = message.lower().split("query")[1].strip()
+                message_lower = message.lower()
                 
-                # Call the function
+                # Handle knowledge base queries
+                if "tell me about" in message_lower:
+                    topic = message_lower.split("tell me about")[-1].strip()
+                    if "llamaindex" in topic:
+                        params = {"topic": "ai_frameworks", "subtopic": "llama_index"}
+                    elif "langchain" in topic:
+                        params = {"topic": "ai_frameworks", "subtopic": "langchain"}
+                    elif "smolagents" in topic:
+                        params = {"topic": "ai_frameworks", "subtopic": "smolagents"}
+                    elif "autogen" in topic:
+                        params = {"topic": "ai_frameworks", "subtopic": "autogen"}
+                    elif "mcp" in topic:
+                        params = {"topic": "mcp"}
+                    else:
+                        params = {"query": topic}
+                
+                # Handle data analysis queries
+                elif "statistics for" in message_lower:
+                    column = message_lower.split("statistics for")[-1].strip()
+                    params = {"operation": "summary", "column": column}
+                
+                # Handle document processing queries
+                elif "summarize" in message_lower and "document" in message_lower:
+                    for doc_id in ["mcp_overview", "llama_index_guide", "langchain_guide", "smolagents_guide", "autogen_guide"]:
+                        if doc_id in message_lower:
+                            params = {"operation": "summarize", "document_id": doc_id}
+                            break
+                
+                # Handle web search queries
+                elif "search for" in message_lower:
+                    query = message_lower.split("search for")[-1].strip()
+                    params = {"query": query}
+                
+                # Call the function with extracted parameters
                 result = func(**params)
                 
                 # Add the result to our messages
-                response = f"Function result: {result}"
+                response = f"Result:\n{result}"
                 self.messages.append({"role": "user", "content": response})
                 
                 # Add the result to the sender's messages
@@ -501,33 +558,58 @@ def run_autogen_example():
         "Tell me about the different AI frameworks and how they integrate with MCP"
     )
     
-    # Coordinator delegates to knowledge agent
-    coordinator.send(
-        "Can you provide information about the AI frameworks?",
-        knowledge_agent
+    # Get framework information
+    frameworks = ["llama_index", "langchain", "smolagents", "autogen"]
+    framework_info = {}
+    
+    # Knowledge agent gets framework information
+    for framework in frameworks:
+        result = json.loads(function_map["mcp_knowledge_base"](topic="ai_frameworks", subtopic=framework))
+        if framework in result:
+            framework_info[framework] = result[framework]
+            knowledge_agent.send(
+                f"Information about {framework}:\n{json.dumps(result[framework], indent=2)}",
+                coordinator
+            )
+    
+    # Get MCP information
+    mcp_result = json.loads(function_map["mcp_knowledge_base"](topic="mcp"))
+    knowledge_agent.send(
+        f"Information about MCP:\n{json.dumps(mcp_result, indent=2)}",
+        coordinator
     )
     
-    # Knowledge agent responds
-    # In a real implementation, this would use the MCP knowledge base
+    # Document agent gets integration guides
+    guides = {}
+    for framework in frameworks:
+        guide_id = f"{framework}_guide"
+        result = json.loads(function_map["mcp_document_processing"](operation="summarize", document_id=guide_id))
+        if isinstance(result, dict) and "summary" in result:
+            guides[framework] = result["summary"]
+            document_agent.send(
+                f"Integration guide for {framework}:\n{result['summary']}",
+                coordinator
+            )
     
-    # Coordinator delegates to document agent
-    coordinator.send(
-        "Can you summarize the integration guides for each framework?",
-        document_agent
-    )
+    # Compile final response
+    response = "Based on the gathered information:\n\n"
     
-    # Document agent responds
-    # In a real implementation, this would use the MCP document processing
+    for framework in frameworks:
+        info = framework_info.get(framework, {})
+        guide = guides.get(framework, "")
+        
+        response += f"{framework.upper()}:\n"
+        response += f"- Description: {info.get('description', 'No description available')}\n"
+        response += f"- Key Features: {', '.join(info.get('key_features', []))}\n"
+        response += f"- Use Cases: {', '.join(info.get('use_cases', []))}\n"
+        response += f"- Integration Guide: {guide}\n\n"
     
-    # Coordinator compiles the information and responds to the user
-    coordinator.send(
-        "Based on the information from the knowledge base and documents, here's a comparison of the different AI frameworks and their integration with MCP:\n\n"
-        "1. LlamaIndex: Provides data indexing and retrieval capabilities. Integrates with MCP through custom retrievers.\n"
-        "2. LangChain: Offers chains and agents for LLM applications. Integrates with MCP through custom tools.\n"
-        "3. SmolaGents: A lightweight agent framework from Hugging Face. Integrates with MCP through tool functions.\n"
-        "4. AutoGen: Supports multi-agent conversations. Integrates with MCP through function calling.",
-        multi_user_proxy
-    )
+    response += "\nMCP Integration:\n"
+    response += f"- Description: {mcp_result.get('description', '')}\n"
+    response += f"- Components: {', '.join(mcp_result.get('components', []))}\n"
+    response += f"- Benefits: {', '.join(mcp_result.get('benefits', []))}\n"
+    
+    coordinator.send(response, multi_user_proxy)
     
     # Print the conversation
     print("\nConversation:")
