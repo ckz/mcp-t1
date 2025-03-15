@@ -381,7 +381,7 @@ def run_langchain_example():
     print("-"*40)
     
     # Create memory
-    memory = ConversationBufferMemory(memory_key="chat_history")
+    memory = ConversationBufferMemory(memory_key="chat_history", input_key="query")
     
     # Create a prompt template with memory
     template_with_memory = """
