@@ -382,14 +382,16 @@ class DocumentResource:
         Returns:
             Dictionary containing document metadata
         """
+        documents = []
+        for doc_id, doc in DOCUMENTS.items():
+            documents.append({
+                "id": doc_id,
+                "title": doc["title"],
+                "content": doc["content"],
+                "metadata": doc["metadata"]
+            })
         return {
-            "documents": [
-                {
-                    "id": doc_id,
-                    "title": doc["title"],
-                    "metadata": doc["metadata"]
-                } for doc_id, doc in DOCUMENTS.items()
-            ]
+            "documents": documents
         }
     
     @staticmethod
