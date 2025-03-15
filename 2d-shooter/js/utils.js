@@ -44,6 +44,8 @@ function createParticleExplosion(scene, x, y, count = 20, speed = 200, scale = 1
  * @param {number} color - Flash color (hex)
  */
 function createScreenFlash(scene, duration = 100, color = 0xffffff) {
+    if (!scene || !scene.add) return;
+    
     const flash = scene.add.rectangle(
         config.width / 2,
         config.height / 2,
@@ -53,15 +55,22 @@ function createScreenFlash(scene, duration = 100, color = 0xffffff) {
         0.8
     );
     
-    scene.tweens.add({
-        targets: flash,
-        alpha: 0,
-        duration: duration,
-        ease: 'Power2',
-        onComplete: () => {
+    if (scene.tweens) {
+        scene.tweens.add({
+            targets: flash,
+            alpha: 0,
+            duration: duration,
+            ease: 'Power2',
+            onComplete: () => {
+                flash.destroy();
+            }
+        });
+    } else {
+        // Fallback if tweens not available
+        setTimeout(() => {
             flash.destroy();
-        }
-    });
+        }, duration);
+    }
 }
 
 /**
@@ -74,6 +83,8 @@ function createScreenFlash(scene, duration = 100, color = 0xffffff) {
  * @param {number} duration - Popup duration in ms
  */
 function createTextPopup(scene, x, y, text, style = {}, duration = 1000) {
+    if (!scene || !scene.add) return null;
+    
     // Default style
     const defaultStyle = {
         font: '20px Arial',
@@ -90,16 +101,23 @@ function createTextPopup(scene, x, y, text, style = {}, duration = 1000) {
         .setOrigin(0.5);
     
     // Animate text
-    scene.tweens.add({
-        targets: textObj,
-        y: y - 50,
-        alpha: 0,
-        duration: duration,
-        ease: 'Power2',
-        onComplete: () => {
+    if (scene.tweens) {
+        scene.tweens.add({
+            targets: textObj,
+            y: y - 50,
+            alpha: 0,
+            duration: duration,
+            ease: 'Power2',
+            onComplete: () => {
+                textObj.destroy();
+            }
+        });
+    } else {
+        // Fallback if tweens not available
+        setTimeout(() => {
             textObj.destroy();
-        }
-    });
+        }, duration);
+    }
     
     return textObj;
 }

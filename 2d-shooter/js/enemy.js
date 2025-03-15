@@ -24,6 +24,28 @@ class Enemy extends Entity {
         }
     }
     
+    // Override damage method to ensure it's available
+    damage(amount) {
+        // Call parent method if it exists
+        if (super.damage) {
+            return super.damage(amount);
+        }
+        
+        // Fallback implementation
+        this.health -= amount;
+        
+        // Emit health changed event
+        this.emit('healthChanged', this.health, this.maxHealth);
+        
+        // Check if destroyed
+        if (this.health <= 0) {
+            this.health = 0;
+            this.isDestroyed = true;
+        }
+        
+        return this.isDestroyed;
+    }
+    
     fireWeapon() {
         // Create bullet
         const bullet = this.scene.enemyBullets.get(this.x, this.y + 20);

@@ -99,14 +99,16 @@ class MenuScene extends Phaser.Scene {
         });
         
         // Add a pulsing effect to the start button
-        this.tweens.add({
-            targets: startButton,
-            scale: 1.1,
-            duration: 800,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
+        if (this.tweens) {
+            this.tweens.add({
+                targets: startButton,
+                scale: 1.1,
+                duration: 800,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
         
         // Controls button
         const controlsButton = this.add.text(width / 2, height / 2 + 80, 'CONTROLS', {

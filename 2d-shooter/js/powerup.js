@@ -69,14 +69,16 @@ class PowerUp extends Entity {
     
     createFloatingAnimation() {
         // Add floating up and down animation
-        this.scene.tweens.add({
-            targets: this,
-            y: this.y + 10,
-            duration: 1000,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
+        if (this.scene && this.scene.tweens) {
+            this.scene.tweens.add({
+                targets: this,
+                y: this.y + 10,
+                duration: 1000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
     }
     
     destroy() {
