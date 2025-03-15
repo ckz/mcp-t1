@@ -218,7 +218,6 @@ class MCPDocumentRetriever(BaseRetriever):
                         score = 0.5
                     
                     nodes.append(NodeWithScore(node=node, score=score))
-        
         return nodes
 
 
@@ -238,17 +237,16 @@ def run_llama_index_example():
     # Create retriever
     retriever = MCPRetriever(client)
     
-    # Create query engine
-    query_engine = RetrieverQueryEngine.from_args(
-        retriever,
-        response_mode=ResponseMode.COMPACT
-    )
-    
-    # Run query
+    # Instead of using a query engine that requires an LLM, we'll just use the retriever directly
+    # and print the retrieved nodes
     query = "Tell me about LlamaIndex"
     print(f"Query: {query}")
-    response = query_engine.query(query)
-    print(f"Response: {response}")
+    nodes = retriever.retrieve(query)
+    
+    # Print the retrieved information
+    print("Retrieved information:")
+    for i, node in enumerate(nodes):
+        print(f"Node {i+1}: {node.node.text}")
     
     # Example 2: Using MCP document resources
     print("\nExample 2: Using MCP document resources")
@@ -257,17 +255,15 @@ def run_llama_index_example():
     # Create document retriever
     doc_retriever = MCPDocumentRetriever(client)
     
-    # Create query engine
-    doc_query_engine = RetrieverQueryEngine.from_args(
-        doc_retriever,
-        response_mode=ResponseMode.COMPACT
-    )
-    
-    # Run query
+    # Use the document retriever directly
     query = "How to integrate LlamaIndex with MCP"
     print(f"Query: {query}")
-    response = doc_query_engine.query(query)
-    print(f"Response: {response}")
+    nodes = doc_retriever.retrieve(query)
+    
+    # Print the retrieved information
+    print("Retrieved information:")
+    for i, node in enumerate(nodes):
+        print(f"Node {i+1} (score: {node.score:.2f}): {node.node.text[:100]}...")
     
     # Example 3: Creating an index from MCP documents
     print("\nExample 3: Creating an index from MCP documents")
@@ -294,21 +290,16 @@ def run_llama_index_example():
                 )
                 documents.append(document)
     
-    # Create index
+    # Create index without using an LLM
     parser = SentenceSplitter()
     nodes = parser.get_nodes_from_documents(documents)
-    index = VectorStoreIndex(nodes)
     
-    # Create query engine
-    vector_query_engine = index.as_query_engine(
-        response_mode=ResponseMode.COMPACT
-    )
-    
-    # Run query
-    query = "Compare the different framework integrations"
-    print(f"Query: {query}")
-    response = vector_query_engine.query(query)
-    print(f"Response: {response}")
+    # Instead of creating a vector index and query engine, just print the documents
+    print(f"Loaded {len(documents)} documents:")
+    for i, doc in enumerate(documents):
+        print(f"Document {i+1}: {doc.metadata.get('title', 'Untitled')}")
+        print(f"Content preview: {doc.text[:100]}...")
+        print()
 
 
 if __name__ == "__main__":

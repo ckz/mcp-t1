@@ -110,8 +110,9 @@ class MCPClient:
 class MCPKnowledgeBaseTool(BaseTool):
     """LangChain tool that uses MCP knowledge base."""
     
-    name = "mcp_knowledge_base"
-    description = "Useful for retrieving information from the knowledge base. Input should be a query string."
+    name: str = "mcp_knowledge_base"
+    description: str = "Useful for retrieving information from the knowledge base. Input should be a query string."
+    client: MCPClient = None
     
     def __init__(self, client: MCPClient):
         """
@@ -120,8 +121,7 @@ class MCPKnowledgeBaseTool(BaseTool):
         Args:
             client: MCP client
         """
-        self.client = client
-        super().__init__()
+        super().__init__(client=client)
     
     def _run(self, query: str) -> str:
         """
@@ -143,8 +143,9 @@ class MCPKnowledgeBaseTool(BaseTool):
 class MCPDataAnalysisTool(BaseTool):
     """LangChain tool that uses MCP data analysis."""
     
-    name = "mcp_data_analysis"
-    description = "Useful for analyzing data. Input should be a column name or 'all' for all columns."
+    name: str = "mcp_data_analysis"
+    description: str = "Useful for analyzing data. Input should be a column name or 'all' for all columns."
+    client: MCPClient = None
     
     def __init__(self, client: MCPClient):
         """
@@ -153,8 +154,7 @@ class MCPDataAnalysisTool(BaseTool):
         Args:
             client: MCP client
         """
-        self.client = client
-        super().__init__()
+        super().__init__(client=client)
     
     def _run(self, column: str) -> str:
         """
@@ -179,8 +179,9 @@ class MCPDataAnalysisTool(BaseTool):
 class MCPDocumentTool(BaseTool):
     """LangChain tool that uses MCP document processing."""
     
-    name = "mcp_document"
-    description = "Useful for processing documents. Input should be a document ID or a search query prefixed with 'search:'."
+    name: str = "mcp_document"
+    description: str = "Useful for processing documents. Input should be a document ID or a search query prefixed with 'search:'."
+    client: MCPClient = None
     
     def __init__(self, client: MCPClient):
         """
@@ -189,8 +190,7 @@ class MCPDocumentTool(BaseTool):
         Args:
             client: MCP client
         """
-        self.client = client
-        super().__init__()
+        super().__init__(client=client)
     
     def _run(self, input_str: str) -> str:
         """
@@ -227,8 +227,9 @@ class MCPDocumentTool(BaseTool):
 class MCPWebSearchTool(BaseTool):
     """LangChain tool that uses MCP web search."""
     
-    name = "mcp_web_search"
-    description = "Useful for searching the web. Input should be a search query."
+    name: str = "mcp_web_search"
+    description: str = "Useful for searching the web. Input should be a search query."
+    client: MCPClient = None
     
     def __init__(self, client: MCPClient):
         """
@@ -237,8 +238,7 @@ class MCPWebSearchTool(BaseTool):
         Args:
             client: MCP client
         """
-        self.client = client
-        super().__init__()
+        super().__init__(client=client)
     
     def _run(self, query: str) -> str:
         """
@@ -266,6 +266,25 @@ class MockLLM(LLM):
     def _llm_type(self) -> str:
         return "mock"
     
+    def _call(
+        self,
+        prompt: str,
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> str:
+        """Call the LLM with the prompt."""
+        if "knowledge base" in prompt.lower():
+            return "The knowledge base contains information about AI frameworks and MCP."
+        elif "data analysis" in prompt.lower():
+            return "The data analysis shows temperature, humidity, and other weather metrics."
+        elif "document" in prompt.lower():
+            return "The documents include guides for integrating different frameworks with MCP."
+        elif "web search" in prompt.lower():
+            return "The web search found information about LlamaIndex, LangChain, SmolaGents, and AutoGen."
+        else:
+            return "I can help you access knowledge, analyze data, process documents, and search the web using MCP."
+    
     def _generate(
         self,
         prompts: List[str],
@@ -276,17 +295,7 @@ class MockLLM(LLM):
         """Generate completions for the prompts."""
         completions = []
         for prompt in prompts:
-            if "knowledge base" in prompt.lower():
-                completion = "The knowledge base contains information about AI frameworks and MCP."
-            elif "data analysis" in prompt.lower():
-                completion = "The data analysis shows temperature, humidity, and other weather metrics."
-            elif "document" in prompt.lower():
-                completion = "The documents include guides for integrating different frameworks with MCP."
-            elif "web search" in prompt.lower():
-                completion = "The web search found information about LlamaIndex, LangChain, SmolaGents, and AutoGen."
-            else:
-                completion = "I can help you access knowledge, analyze data, process documents, and search the web using MCP."
-            
+            completion = self._call(prompt, stop, run_manager, **kwargs)
             completions.append(completion)
         
         return LLMResult(generations=[[{"text": text}] for text in completions])

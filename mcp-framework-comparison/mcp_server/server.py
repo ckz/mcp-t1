@@ -11,9 +11,9 @@ import os
 import sys
 from typing import Any, Dict, List, Optional, Union
 
-from modelcontextprotocol.server import Server
-from modelcontextprotocol.server.stdio import StdioServerTransport
-from modelcontextprotocol.types import (
+from mcp.server import Server
+from mcp.server.stdio import StdioServerTransport
+from mcp.types import (
     CallToolRequestSchema,
     ErrorCode,
     ListResourcesRequestSchema,

@@ -73,7 +73,8 @@ class AssistantAgent(ConversableAgent):
             message: Message received
             sender: Sender agent
         """
-        super().receive(message, sender)
+        # Store the message but don't call super().receive() to avoid recursion
+        self.messages.append({"role": "assistant", "content": message})
         
         # Generate a response based on the message
         # This is a simplified implementation for demonstration
@@ -88,8 +89,11 @@ class AssistantAgent(ConversableAgent):
         else:
             response = "I'll help you with that."
         
-        # Send the response back
-        self.send(response, sender)
+        # Add the response to our messages
+        self.messages.append({"role": "user", "content": response})
+        
+        # Add the response to the sender's messages
+        sender.messages.append({"role": "assistant", "content": response})
 
 
 class UserProxyAgent(ConversableAgent):
@@ -121,7 +125,8 @@ class UserProxyAgent(ConversableAgent):
             message: Message received
             sender: Sender agent
         """
-        super().receive(message, sender)
+        # Store the message but don't call super().receive() to avoid recursion
+        self.messages.append({"role": "assistant", "content": message})
         
         # Check if the message contains a function call
         for func_name, func in self.function_map.items():
@@ -135,8 +140,12 @@ class UserProxyAgent(ConversableAgent):
                 # Call the function
                 result = func(**params)
                 
-                # Send the result back
-                self.send(f"Function result: {result}", sender)
+                # Add the result to our messages
+                response = f"Function result: {result}"
+                self.messages.append({"role": "user", "content": response})
+                
+                # Add the result to the sender's messages
+                sender.messages.append({"role": "assistant", "content": response})
                 return
     
     def initiate_chat(self, recipient: ConversableAgent, message: str) -> None:

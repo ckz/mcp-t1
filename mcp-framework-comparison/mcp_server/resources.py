@@ -299,72 +299,7 @@ DOCUMENTS = {
     },
     "autogen_guide": {
         "title": "AutoGen Integration Guide",
-        "content": """
-        # AutoGen Integration Guide
-        
-        This guide explains how to integrate AutoGen with the Model Context Protocol (MCP).
-        
-        ## Prerequisites
-        
-        - Python 3.9+
-        - AutoGen 0.2.0+
-        - MCP client library
-        
-        ## Integration Steps
-        
-        1. Install the required packages:
-           ```
-           pip install pyautogen mcp-client
-           ```
-        
-        2. Initialize the MCP client:
-           ```python
-           from mcp_client import MCPClient
-           
-           client = MCPClient(server_url="http://localhost:8000")
-           ```
-        
-        3. Create a custom function that uses MCP:
-           ```python
-           def mcp_knowledge_base(query):
-               """
-               Access knowledge base through MCP.
-               
-               Args:
-                   query: The query to search for
-                   
-               Returns:
-                   The search results
-               """
-               return client.call_tool("knowledge_base_tool", {"query": query})
-           ```
-        
-        4. Use the function in your AutoGen application:
-           ```python
-           import autogen
-           
-           # Register the function with AutoGen
-           autogen.register_function(mcp_knowledge_base)
-           
-           # Create agents
-           assistant = autogen.AssistantAgent(
-               name="assistant",
-               llm_config={"config": "..."}
-           )
-           
-           user_proxy = autogen.UserProxyAgent(
-               name="user_proxy",
-               human_input_mode="NEVER",
-               function_map={"mcp_knowledge_base": mcp_knowledge_base}
-           )
-           
-           # Start the conversation
-           user_proxy.initiate_chat(
-               assistant,
-               message="Tell me about MCP"
-           )
-           ```
-        """,
+        "content": "# AutoGen Integration Guide\n\nThis guide explains how to integrate AutoGen with the Model Context Protocol (MCP).\n\n## Prerequisites\n\n- Python 3.9+\n- AutoGen 0.2.0+\n- MCP client library\n\n## Integration Steps\n\n1. Install the required packages:\n   ```\n   pip install pyautogen mcp-client\n   ```\n\n2. Initialize the MCP client:\n   ```python\n   from mcp_client import MCPClient\n   \n   client = MCPClient(server_url=\"http://localhost:8000\")\n   ```\n\n3. Create a custom function that uses MCP:\n   ```python\n   def mcp_knowledge_base(query):\n       \"\"\"\n       Access knowledge base through MCP.\n       \n       Args:\n           query: The query to search for\n           \n       Returns:\n           The search results\n       \"\"\"\n       return client.call_tool(\"knowledge_base_tool\", {\"query\": query})\n   ```\n\n4. Use the function in your AutoGen application:\n   ```python\n   import autogen\n   \n   # Register the function with AutoGen\n   autogen.register_function(mcp_knowledge_base)\n   \n   # Create agents\n   assistant = autogen.AssistantAgent(\n       name=\"assistant\",\n       llm_config={\"config\": \"...\"}\n   )\n   \n   user_proxy = autogen.UserProxyAgent(\n       name=\"user_proxy\",\n       human_input_mode=\"NEVER\",\n       function_map={\"mcp_knowledge_base\": mcp_knowledge_base}\n   )\n   \n   # Start the conversation\n   user_proxy.initiate_chat(\n       assistant,\n       message=\"Tell me about MCP\"\n   )\n   ```",
         "metadata": {
             "author": "Microsoft Research",
             "date": "2023-06-20",
