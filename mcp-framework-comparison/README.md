@@ -60,22 +60,70 @@ The project evaluates each framework on:
    pip install -r requirements.txt
    ```
 
-2. Start the MCP server:
+2. Run the web demo to compare all framework integrations:
    ```
-   python -m mcp_server.server
+   python3 demo/web_app.py
+   ```
+   This will start a Flask web server at http://localhost:5000 where you can compare the different framework integrations.
+
+3. Alternatively, run individual examples:
+   ```
+   # Run the LlamaIndex integration example
+   python3 examples/llama_index_integration/main.py
+   
+   # Run the LangChain integration example
+   python3 examples/langchain_integration/main.py
+   
+   # Run the SmolaGents integration example
+   python3 examples/smolagents_integration/main.py
+   
+   # Run the AutoGen integration example
+   python3 examples/autogen_integration/main.py
    ```
 
-3. Run an example integration:
+4. Run all examples sequentially:
    ```
-   python -m examples.llama_index_integration.main
+   python3 run_all_examples.py
    ```
 
-4. Launch the comparison web app:
-   ```
-   python -m demo.web_app
-   ```
+## Known Issues
+
+- The MCP server implementation has compatibility issues with the latest version of the MCP package, resulting in the following error:
+  ```
+  ImportError: cannot import name 'StdioServerTransport' from 'mcp.server.stdio'
+  ```
+  This is likely due to API changes in the MCP package. A potential fix would be to update the import statements in `mcp_server/server.py` to match the current MCP package API.
+
+- As a workaround, the examples are designed to simulate MCP functionality without requiring a separate MCP server process.
 
 ## Requirements
 
 - Python 3.9+
 - Dependencies listed in requirements.txt
+
+## Changelog
+
+### 2025-03-15
+- **Update SmolaGents MCP integration example and consolidate gitignore files**
+  - Improved SmolaGents integration by converting query strings to lowercase for better matching
+  - Consolidated gitignore files for better project organization
+  - Enhanced document search functionality in the chain tools example
+
+- **Fix memory configuration in LangChain example**
+  - Added input_key parameter to ConversationBufferMemory for proper memory handling
+
+- **Fix LangChain agent initialization to handle parsing errors**
+  - Added handle_parsing_errors=True to agent initialization to improve error handling
+
+- **Fix bugs in MCP framework comparison project**
+  - Fixed package name in requirements.txt from 'modelcontextprotocol' to 'mcp'
+  - Updated import paths in server.py to use the correct package name
+  - Fixed duplicate function definition in llama_index_integration/main.py
+  - Corrected syntax errors in langchain_integration/main.py
+  - Resolved recursion issues in autogen_integration/main.py
+  - Fixed syntax error in resources.py by replacing multiline string
+  - Added required '_call' method to MockLLM class in langchain_integration/main.py
+  - Fixed Pydantic field issues in tool classes
+
+- **Initial project creation**
+  - Added MCP framework comparison project with LlamaIndex, LangChain, SmolaGents, and AutoGen integrations

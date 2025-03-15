@@ -12,15 +12,12 @@ import sys
 from typing import Any, Dict, List, Optional, Union
 
 from mcp.server import Server
-from mcp.server.stdio import StdioServerTransport
+from mcp.server.stdio import stdio_server
 from mcp.types import (
-    CallToolRequestSchema,
-    ErrorCode,
-    ListResourcesRequestSchema,
-    ListResourceTemplatesRequestSchema,
-    ListToolsRequestSchema,
-    McpError,
-    ReadResourceRequestSchema,
+    TextContent,
+    Tool,
+    Resource,
+    ResourceTemplate,
 )
 
 from mcp_server.tools import KnowledgeBaseTool, DataAnalysisTool, DocumentProcessingTool
@@ -41,16 +38,8 @@ class MCPServer:
     def __init__(self):
         """Initialize the MCP server."""
         self.server = Server(
-            {
-                "name": "mcp-framework-comparison",
-                "version": "0.1.0",
-            },
-            {
-                "capabilities": {
-                    "resources": {},
-                    "tools": {},
-                }
-            }
+            name="mcp-framework-comparison",
+            version="0.1.0",
         )
         
         # Initialize tools
@@ -62,181 +51,189 @@ class MCPServer:
         self.web_search_resource = WebSearchResource()
         self.document_resource = DocumentResource()
         
-        # Set up request handlers
-        self._setup_tool_handlers()
-        self._setup_resource_handlers()
+        # Register handlers
+        self.register_handlers()
+    
+    def register_handlers(self):
+        """Register handlers for requests."""
+        # Tool handlers
+        @self.server.list_tools()
+        async def handle_list_tools():
+            return await self._handle_list_tools()
         
-        # Error handling
-        self.server.onerror = self._handle_error
+        @self.server.call_tool()
+        async def handle_call_tool(tool_name, arguments):
+            return await self._handle_call_tool(tool_name, arguments)
+        
+        # Resource handlers
+        @self.server.list_resources()
+        async def handle_list_resources():
+            return await self._handle_list_resources()
+        
+        @self.server.list_resource_templates()
+        async def handle_list_resource_templates():
+            return await self._handle_list_resource_templates()
+        
+        @self.server.read_resource()
+        async def handle_read_resource(uri):
+            return await self._handle_read_resource(uri)
     
-    def _setup_tool_handlers(self):
-        """Set up handlers for tool-related requests."""
-        self.server.setRequestHandler(ListToolsRequestSchema, self._handle_list_tools)
-        self.server.setRequestHandler(CallToolRequestSchema, self._handle_call_tool)
-    
-    def _setup_resource_handlers(self):
-        """Set up handlers for resource-related requests."""
-        self.server.setRequestHandler(ListResourcesRequestSchema, self._handle_list_resources)
-        self.server.setRequestHandler(ListResourceTemplatesRequestSchema, self._handle_list_resource_templates)
-        self.server.setRequestHandler(ReadResourceRequestSchema, self._handle_read_resource)
-    
-    async def _handle_list_tools(self, request):
+    async def _handle_list_tools(self):
         """Handle ListTools request."""
-        return {
-            "tools": [
-                {
-                    "name": "knowledge_base_get_info",
-                    "description": "Get information from the knowledge base",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "topic": {
-                                "type": "string",
-                                "description": "The main topic to retrieve information about"
-                            },
-                            "subtopic": {
-                                "type": "string",
-                                "description": "Optional subtopic for more specific information"
-                            }
+        from mcp.types import Tool
+        
+        return [
+            Tool(
+                name="knowledge_base_get_info",
+                description="Get information from the knowledge base",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "topic": {
+                            "type": "string",
+                            "description": "The main topic to retrieve information about"
                         },
-                        "required": ["topic"]
-                    }
-                },
-                {
-                    "name": "knowledge_base_list_topics",
-                    "description": "List all available topics in the knowledge base",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {}
-                    }
-                },
-                {
-                    "name": "knowledge_base_search",
-                    "description": "Search the knowledge base for a query",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "The search query"
-                            }
-                        },
-                        "required": ["query"]
-                    }
-                },
-                {
-                    "name": "data_analysis_get_summary_statistics",
-                    "description": "Get summary statistics for the dataset",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "column": {
-                                "type": "string",
-                                "description": "Optional column name to get statistics for"
-                            }
+                        "subtopic": {
+                            "type": "string",
+                            "description": "Optional subtopic for more specific information"
+                        }
+                    },
+                    "required": ["topic"]
+                }
+            ),
+            Tool(
+                name="knowledge_base_list_topics",
+                description="List all available topics in the knowledge base",
+                inputSchema={
+                    "type": "object",
+                    "properties": {}
+                }
+            ),
+            Tool(
+                name="knowledge_base_search",
+                description="Search the knowledge base for a query",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "The search query"
+                        }
+                    },
+                    "required": ["query"]
+                }
+            ),
+            Tool(
+                name="data_analysis_get_summary_statistics",
+                description="Get summary statistics for the dataset",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "column": {
+                            "type": "string",
+                            "description": "Optional column name to get statistics for"
                         }
                     }
-                },
-                {
-                    "name": "data_analysis_filter_data",
-                    "description": "Filter the dataset based on a condition",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "column": {
-                                "type": "string",
-                                "description": "Column name to filter on"
-                            },
-                            "operator": {
-                                "type": "string",
-                                "description": "Comparison operator ('eq', 'gt', 'lt', 'gte', 'lte', 'contains')"
-                            },
-                            "value": {
-                                "oneOf": [
-                                    {"type": "string"},
-                                    {"type": "number"}
-                                ],
-                                "description": "Value to compare against"
-                            }
-                        },
-                        "required": ["column", "operator", "value"]
-                    }
-                },
-                {
-                    "name": "data_analysis_get_correlation",
-                    "description": "Calculate correlation between two columns",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "column1": {
-                                "type": "string",
-                                "description": "First column name"
-                            },
-                            "column2": {
-                                "type": "string",
-                                "description": "Second column name"
-                            }
-                        },
-                        "required": ["column1", "column2"]
-                    }
-                },
-                {
-                    "name": "document_processing_extract_entities",
-                    "description": "Extract entities from text",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "description": "The text to extract entities from"
-                            }
-                        },
-                        "required": ["text"]
-                    }
-                },
-                {
-                    "name": "document_processing_summarize",
-                    "description": "Generate a summary of the text",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "description": "The text to summarize"
-                            },
-                            "max_length": {
-                                "type": "integer",
-                                "description": "Maximum length of the summary"
-                            }
-                        },
-                        "required": ["text"]
-                    }
-                },
-                {
-                    "name": "document_processing_extract_keywords",
-                    "description": "Extract keywords from text",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "description": "The text to extract keywords from"
-                            },
-                            "max_keywords": {
-                                "type": "integer",
-                                "description": "Maximum number of keywords to extract"
-                            }
-                        },
-                        "required": ["text"]
-                    }
                 }
-            ]
-        }
+            ),
+            Tool(
+                name="data_analysis_filter_data",
+                description="Filter the dataset based on a condition",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "column": {
+                            "type": "string",
+                            "description": "Column name to filter on"
+                        },
+                        "operator": {
+                            "type": "string",
+                            "description": "Comparison operator ('eq', 'gt', 'lt', 'gte', 'lte', 'contains')"
+                        },
+                        "value": {
+                            "oneOf": [
+                                {"type": "string"},
+                                {"type": "number"}
+                            ],
+                            "description": "Value to compare against"
+                        }
+                    },
+                    "required": ["column", "operator", "value"]
+                }
+            ),
+            Tool(
+                name="data_analysis_get_correlation",
+                description="Calculate correlation between two columns",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "column1": {
+                            "type": "string",
+                            "description": "First column name"
+                        },
+                        "column2": {
+                            "type": "string",
+                            "description": "Second column name"
+                        }
+                    },
+                    "required": ["column1", "column2"]
+                }
+            ),
+            Tool(
+                name="document_processing_extract_entities",
+                description="Extract entities from text",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "text": {
+                            "type": "string",
+                            "description": "The text to extract entities from"
+                        }
+                    },
+                    "required": ["text"]
+                }
+            ),
+            Tool(
+                name="document_processing_summarize",
+                description="Generate a summary of the text",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "text": {
+                            "type": "string",
+                            "description": "The text to summarize"
+                        },
+                        "max_length": {
+                            "type": "integer",
+                            "description": "Maximum length of the summary"
+                        }
+                    },
+                    "required": ["text"]
+                }
+            ),
+            Tool(
+                name="document_processing_extract_keywords",
+                description="Extract keywords from text",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "text": {
+                            "type": "string",
+                            "description": "The text to extract keywords from"
+                        },
+                        "max_keywords": {
+                            "type": "integer",
+                            "description": "Maximum number of keywords to extract"
+                        }
+                    },
+                    "required": ["text"]
+                }
+            )
+        ]
     
-    async def _handle_call_tool(self, request):
+    async def _handle_call_tool(self, tool_name, arguments):
         """Handle CallTool request."""
-        tool_name = request.params.name
-        arguments = request.params.arguments
+        from mcp.types import TextContent
         
         try:
             # Knowledge base tools
@@ -285,155 +282,122 @@ class MCPServer:
                     max_keywords=arguments.get("max_keywords", 5)
                 )
             else:
-                raise McpError(
-                    ErrorCode.MethodNotFound,
-                    f"Unknown tool: {tool_name}"
-                )
+                return [TextContent(type="text", text=f"Unknown tool: {tool_name}")]
             
             # Convert result to JSON string
             result_json = json.dumps(result, indent=2)
             
-            return {
-                "content": [
-                    {
-                        "type": "text",
-                        "text": result_json
-                    }
-                ]
-            }
+            return [TextContent(type="text", text=result_json)]
         except Exception as e:
             logger.exception(f"Error calling tool {tool_name}")
-            return {
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"Error: {str(e)}"
-                    }
-                ],
-                "isError": True
-            }
+            return [TextContent(type="text", text=f"Error: {str(e)}")]
     
-    async def _handle_list_resources(self, request):
+    async def _handle_list_resources(self):
         """Handle ListResources request."""
-        return {
-            "resources": [
-                {
-                    "uri": "mcp://documents/list",
-                    "name": "Document List",
-                    "mimeType": "application/json",
-                    "description": "List of all available documents"
-                }
-            ]
-        }
-    
-    async def _handle_list_resource_templates(self, request):
-        """Handle ListResourceTemplates request."""
-        return {
-            "resourceTemplates": [
-                {
-                    "uriTemplate": "mcp://web-search/{query}",
-                    "name": "Web Search",
-                    "mimeType": "application/json",
-                    "description": "Search the web for a query"
-                },
-                {
-                    "uriTemplate": "mcp://documents/{document_id}",
-                    "name": "Document",
-                    "mimeType": "application/json",
-                    "description": "Get a document by ID"
-                },
-                {
-                    "uriTemplate": "mcp://documents/search/{query}",
-                    "name": "Document Search",
-                    "mimeType": "application/json",
-                    "description": "Search documents for a query"
-                }
-            ]
-        }
-    
-    async def _handle_read_resource(self, request):
-        """Handle ReadResource request."""
-        uri = request.params.uri
+        from mcp.types import Resource
         
+        return [
+            Resource(
+                uri="mcp://documents/list",
+                name="Document List",
+                mimeType="application/json",
+                description="List of all available documents"
+            )
+        ]
+    
+    async def _handle_list_resource_templates(self):
+        """Handle ListResourceTemplates request."""
+        from mcp.types import ResourceTemplate
+        
+        return [
+            ResourceTemplate(
+                uriTemplate="mcp://web-search/{query}",
+                name="Web Search",
+                mimeType="application/json",
+                description="Search the web for a query"
+            ),
+            ResourceTemplate(
+                uriTemplate="mcp://documents/{document_id}",
+                name="Document",
+                mimeType="application/json",
+                description="Get a document by ID"
+            ),
+            ResourceTemplate(
+                uriTemplate="mcp://documents/search/{query}",
+                name="Document Search",
+                mimeType="application/json",
+                description="Search documents for a query"
+            )
+        ]
+    
+    async def _handle_read_resource(self, uri):
+        """Handle ReadResource request."""
         try:
             # Static resources
             if uri == "mcp://documents/list":
                 result = self.document_resource.list_documents()
-                return {
-                    "contents": [
-                        {
-                            "uri": uri,
-                            "mimeType": "application/json",
-                            "text": json.dumps(result, indent=2)
-                        }
-                    ]
-                }
+                return [{
+                    "uri": uri,
+                    "mime_type": "application/json",
+                    "content": json.dumps(result, indent=2)
+                }]
             
             # Web search resource template
             web_search_match = uri.startswith("mcp://web-search/")
             if web_search_match:
                 query = uri[len("mcp://web-search/"):]
                 result = self.web_search_resource.search(query)
-                return {
-                    "contents": [
-                        {
-                            "uri": uri,
-                            "mimeType": "application/json",
-                            "text": json.dumps(result, indent=2)
-                        }
-                    ]
-                }
+                return [{
+                    "uri": uri,
+                    "mime_type": "application/json",
+                    "content": json.dumps(result, indent=2)
+                }]
             
             # Document resource template
             document_match = uri.startswith("mcp://documents/")
             if document_match and not uri.startswith("mcp://documents/search/"):
                 document_id = uri[len("mcp://documents/"):]
                 result = self.document_resource.get_document(document_id)
-                return {
-                    "contents": [
-                        {
-                            "uri": uri,
-                            "mimeType": "application/json",
-                            "text": json.dumps(result, indent=2)
-                        }
-                    ]
-                }
+                return [{
+                    "uri": uri,
+                    "mime_type": "application/json",
+                    "content": json.dumps(result, indent=2)
+                }]
             
             # Document search resource template
             document_search_match = uri.startswith("mcp://documents/search/")
             if document_search_match:
                 query = uri[len("mcp://documents/search/"):]
                 result = self.document_resource.search_documents(query)
-                return {
-                    "contents": [
-                        {
-                            "uri": uri,
-                            "mimeType": "application/json",
-                            "text": json.dumps(result, indent=2)
-                        }
-                    ]
-                }
+                return [{
+                    "uri": uri,
+                    "mime_type": "application/json",
+                    "content": json.dumps(result, indent=2)
+                }]
             
-            raise McpError(
-                ErrorCode.InvalidRequest,
-                f"Unknown resource URI: {uri}"
-            )
+            return [{
+                "uri": uri,
+                "mime_type": "text/plain",
+                "content": f"Unknown resource URI: {uri}"
+            }]
         except Exception as e:
             logger.exception(f"Error reading resource {uri}")
-            raise McpError(
-                ErrorCode.InternalError,
-                f"Error reading resource: {str(e)}"
-            )
-    
-    def _handle_error(self, error):
-        """Handle errors."""
-        logger.error(f"MCP Error: {error}")
-    
+            return [{
+                "uri": uri,
+                "mime_type": "text/plain",
+                "content": f"Error reading resource: {str(e)}"
+            }]
+
     async def run(self):
         """Run the MCP server."""
-        transport = StdioServerTransport()
-        await self.server.connect(transport)
-        logger.info("MCP server running on stdio")
+        async with stdio_server() as (read_stream, write_stream):
+            # The error shows run() needs read_stream, write_stream, and initialization_options
+            # Let's provide empty dict as default initialization_options
+            initialization_options = {}
+            await self.server.run(read_stream, write_stream, initialization_options)
+            logger.info("MCP server running on stdio")       
+    
+
 
 
 def main():
