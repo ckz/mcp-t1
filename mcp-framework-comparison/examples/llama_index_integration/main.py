@@ -52,26 +52,31 @@ class MCPClient:
         
         logger.info(f"Calling MCP tool: {tool_name} with arguments: {arguments}")
         
-        # Simulate calling the MCP server
-        if tool_name == "knowledge_base_get_info":
-            from mcp_server.tools import KnowledgeBaseTool
-            return KnowledgeBaseTool.get_info(
-                topic=arguments.get("topic"),
-                subtopic=arguments.get("subtopic")
-            )
-        elif tool_name == "knowledge_base_search":
-            from mcp_server.tools import KnowledgeBaseTool
-            return KnowledgeBaseTool.search(
-                query=arguments.get("query")
-            )
-        elif tool_name == "document_processing_summarize":
-            from mcp_server.tools import DocumentProcessingTool
-            return DocumentProcessingTool.summarize(
-                text=arguments.get("text"),
-                max_length=arguments.get("max_length", 100)
-            )
-        else:
-            raise ValueError(f"Unknown tool: {tool_name}")
+        # Import tools here to ensure they're loaded after server initialization
+        from mcp_server.tools import KnowledgeBaseTool, DocumentProcessingTool
+        
+        logger.info(f"Calling MCP tool: {tool_name} with arguments: {arguments}")
+        
+        try:
+            if tool_name == "knowledge_base_get_info":
+                return KnowledgeBaseTool().get_info(
+                    topic=arguments.get("topic"),
+                    subtopic=arguments.get("subtopic")
+                )
+            elif tool_name == "knowledge_base_search":
+                return KnowledgeBaseTool().search(
+                    query=arguments.get("query")
+                )
+            elif tool_name == "document_processing_summarize":
+                return DocumentProcessingTool().summarize(
+                    text=arguments.get("text"),
+                    max_length=arguments.get("max_length", 100)
+                )
+            else:
+                raise ValueError(f"Unknown tool: {tool_name}")
+        except Exception as e:
+            logger.error(f"Error calling tool {tool_name}: {str(e)}")
+            return {"error": str(e)}
     
     def get_resource(self, uri: str) -> Dict[str, Any]:
         """
@@ -88,17 +93,28 @@ class MCPClient:
         
         logger.info(f"Getting MCP resource: {uri}")
         
-        # Simulate getting the resource
-        if uri.startswith("mcp://documents/"):
-            from mcp_server.resources import DocumentResource
-            document_id = uri[len("mcp://documents/"):]
-            return DocumentResource.get_document(document_id)
-        elif uri.startswith("mcp://web-search/"):
-            from mcp_server.resources import WebSearchResource
-            query = uri[len("mcp://web-search/"):]
-            return WebSearchResource.search(query)
-        else:
-            raise ValueError(f"Unknown resource URI: {uri}")
+        # Import resources here to ensure they're loaded after server initialization
+        from mcp_server.resources import DocumentResource, WebSearchResource
+        
+        logger.info(f"Getting MCP resource: {uri}")
+        
+        try:
+            if uri == "mcp://documents/list":
+                return DocumentResource().list_documents()
+            elif uri.startswith("mcp://documents/search/"):
+                query = uri[len("mcp://documents/search/"):]
+                return DocumentResource().search_documents(query)
+            elif uri.startswith("mcp://documents/"):
+                document_id = uri[len("mcp://documents/"):]
+                return DocumentResource().get_document(document_id)
+            elif uri.startswith("mcp://web-search/"):
+                query = uri[len("mcp://web-search/"):]
+                return WebSearchResource().search(query)
+            else:
+                raise ValueError(f"Unknown resource URI: {uri}")
+        except Exception as e:
+            logger.error(f"Error getting resource {uri}: {str(e)}")
+            return {"error": str(e)}
 
 
 class MCPRetriever(BaseRetriever):
@@ -128,26 +144,51 @@ class MCPRetriever(BaseRetriever):
         """
         query = query_bundle.query_str
         
-        # Call MCP tool to get results
-        results = self.client.call_tool(self.tool_name, {"query": query})
+        # Try getting direct info about LlamaIndex
+        info_results = self.client.call_tool("knowledge_base_get_info", {"topic": "ai_frameworks", "subtopic": "llama_index"})
         
         # Convert results to nodes
         nodes = []
         
-        # Process the results based on their structure
-        # This is a simplified implementation for demonstration
-        if isinstance(results, dict):
-            for topic, topic_data in results.items():
-                if isinstance(topic_data, dict):
-                    for subtopic, subtopic_data in topic_data.items():
-                        if isinstance(subtopic_data, (str, list)):
-                            text = f"{topic} - {subtopic}: {subtopic_data}"
+        # Process the direct info results
+        if isinstance(info_results, dict) and "llama_index" in info_results:
+            framework_data = info_results["llama_index"]
+            text = (
+                "LlamaIndex:\n"
+                f"Description: {framework_data['description']}\n\n"
+                f"Key Features:\n- {'\n- '.join(framework_data['key_features'])}\n\n"
+                f"Use Cases:\n- {'\n- '.join(framework_data['use_cases'])}\n\n"
+                f"GitHub Repository: {framework_data['github']}"
+            )
+            node = TextNode(text=text)
+            nodes.append(NodeWithScore(node=node, score=1.0))
+        
+        # If no direct results, try searching
+        if not nodes:
+            search_results = self.client.call_tool(self.tool_name, {"query": query})
+            if isinstance(search_results, dict):
+                for topic, topic_data in search_results.items():
+                    if topic == "ai_frameworks":
+                        for framework, framework_data in topic_data.items():
+                            text = (
+                                f"{framework}:\n"
+                                f"Description: {framework_data['description']}\n"
+                                f"Key features: {', '.join(framework_data['key_features'])}\n"
+                                f"Use cases: {', '.join(framework_data['use_cases'])}\n"
+                                f"GitHub: {framework_data['github']}"
+                            )
                             node = TextNode(text=text)
-                            nodes.append(NodeWithScore(node=node, score=1.0))
-                else:
-                    text = f"{topic}: {topic_data}"
-                    node = TextNode(text=text)
-                    nodes.append(NodeWithScore(node=node, score=1.0))
+                            nodes.append(NodeWithScore(node=node, score=0.8))
+                    elif topic == "mcp":
+                        text = (
+                            f"MCP:\n"
+                            f"Description: {topic_data['description']}\n"
+                            f"Components: {', '.join(topic_data['components'])}\n"
+                            f"Benefits: {', '.join(topic_data['benefits'])}\n"
+                            f"Specification: {topic_data['specification']}"
+                        )
+                        node = TextNode(text=text)
+                        nodes.append(NodeWithScore(node=node, score=0.5))
         
         return nodes
 
@@ -185,39 +226,64 @@ class MCPDocumentRetriever(BaseRetriever):
         else:
             search_query = query
         
-        # Get document search results
-        uri = f"mcp://documents/search/{search_query}"
-        results = self.client.get_resource(uri)
-        
-        # Convert results to nodes
+        # Try searching documents first
+        search_results = self.client.get_resource(f"mcp://documents/search/{search_query}")
         nodes = []
         
-        if "results" in results:
-            for result in results["results"]:
-                # Get the full document
-                document = self.client.get_resource(f"mcp://documents/{result['id']}")
-                
-                if "content" in document:
-                    # Create a node from the document content
+        # Process search results
+        if "results" in search_results:
+            for result in search_results["results"]:
+                doc = self.client.get_resource(f"mcp://documents/{result['id']}")
+                if "content" in doc:
                     node = TextNode(
-                        text=document["content"],
+                        text=doc["content"],
                         metadata={
-                            "title": document.get("title", ""),
+                            "title": doc.get("title", ""),
                             "id": result["id"],
-                            "match": result.get("match", "")
+                            "author": doc.get("metadata", {}).get("author", ""),
+                            "date": doc.get("metadata", {}).get("date", ""),
+                            "tags": doc.get("metadata", {}).get("tags", [])
                         }
                     )
                     
-                    # Assign a score based on the match type
-                    score = 1.0
-                    if result.get("match") == "title":
-                        score = 0.9
-                    elif result.get("match") == "content":
-                        score = 0.7
-                    elif result.get("match", "").startswith("metadata"):
-                        score = 0.5
-                    
+                    # Score based on match type
+                    score = 0.9 if result.get("match") == "title" else 0.7
                     nodes.append(NodeWithScore(node=node, score=score))
+        
+        # If no search results, try getting all documents and filtering
+        if not nodes:
+            docs = self.client.get_resource("mcp://documents/list")
+            if "documents" in docs:
+                for doc_info in docs["documents"]:
+                    doc = self.client.get_resource(f"mcp://documents/{doc_info['id']}")
+                    if "content" in doc:
+                        # Check if this document is relevant to the query
+                        query_terms = search_query.lower().split()
+                        title_terms = doc["title"].lower().split()
+                        content_preview = doc["content"][:500].lower()  # Check first 500 chars
+                        
+                        # Calculate relevance score
+                        score = 0.0
+                        for term in query_terms:
+                            if term in title_terms:
+                                score = max(score, 0.8)
+                            elif term in content_preview:
+                                score = max(score, 0.6)
+                            elif any(term in tag.lower() for tag in doc.get("metadata", {}).get("tags", [])):
+                                score = max(score, 0.4)
+                        
+                        if score > 0:
+                            node = TextNode(
+                                text=doc["content"],
+                                metadata={
+                                    "title": doc.get("title", ""),
+                                    "id": doc_info["id"],
+                                    "author": doc.get("metadata", {}).get("author", ""),
+                                    "date": doc.get("metadata", {}).get("date", ""),
+                                    "tags": doc.get("metadata", {}).get("tags", [])
+                                }
+                            )
+                            nodes.append(NodeWithScore(node=node, score=score))
         return nodes
 
 
@@ -244,9 +310,13 @@ def run_llama_index_example():
     nodes = retriever.retrieve(query)
     
     # Print the retrieved information
-    print("Retrieved information:")
-    for i, node in enumerate(nodes):
-        print(f"Node {i+1}: {node.node.text}")
+    print("\nRetrieved information:")
+    if nodes:
+        for i, node in enumerate(nodes, 1):
+            print(f"\nNode {i}:")
+            print(node.node.text)
+    else:
+        print("No relevant information found.")
     
     # Example 2: Using MCP document resources
     print("\nExample 2: Using MCP document resources")
@@ -261,9 +331,16 @@ def run_llama_index_example():
     nodes = doc_retriever.retrieve(query)
     
     # Print the retrieved information
-    print("Retrieved information:")
-    for i, node in enumerate(nodes):
-        print(f"Node {i+1} (score: {node.score:.2f}): {node.node.text[:100]}...")
+    print("\nRetrieved information:")
+    if nodes:
+        for i, node in enumerate(nodes, 1):
+            print(f"\nNode {i} (score: {node.score:.2f}):")
+            print(f"Title: {node.node.metadata.get('title', 'Untitled')}")
+            print(f"Author: {node.node.metadata.get('author', 'Unknown')}")
+            print(f"Date: {node.node.metadata.get('date', 'Unknown')}")
+            print(f"Content preview: {node.node.text[:200]}...")
+    else:
+        print("No relevant documents found.")
     
     # Example 3: Creating an index from MCP documents
     print("\nExample 3: Creating an index from MCP documents")

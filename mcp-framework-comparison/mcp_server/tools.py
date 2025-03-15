@@ -116,31 +116,37 @@ class KnowledgeBaseTool:
         results = {}
         query = query.lower()
         
+        def search_value(value: Any, query: str) -> bool:
+            """Helper function to search through values recursively."""
+            if isinstance(value, str):
+                return query in value.lower()
+            elif isinstance(value, list):
+                return any(search_value(item, query) for item in value)
+            elif isinstance(value, dict):
+                return any(search_value(v, query) for v in value.values())
+            return False
+        
         for topic, topic_data in KNOWLEDGE_BASE.items():
-            if query in topic.lower():
-                results[topic] = topic_data
-                continue
-                
             if isinstance(topic_data, dict):
-                for subtopic, subtopic_data in topic_data.items():
-                    if query in subtopic.lower():
-                        if topic not in results:
-                            results[topic] = {}
-                        results[topic][subtopic] = subtopic_data
-                        continue
+                # For ai_frameworks, search through each framework
+                if topic == "ai_frameworks":
+                    matching_frameworks = {}
+                    for framework, framework_data in topic_data.items():
+                        # Check framework name
+                        if query in framework.lower():
+                            matching_frameworks[framework] = framework_data
+                            continue
+                            
+                        # Check framework data
+                        if search_value(framework_data, query):
+                            matching_frameworks[framework] = framework_data
                     
-                    if isinstance(subtopic_data, (str, list)):
-                        if isinstance(subtopic_data, str) and query in subtopic_data.lower():
-                            if topic not in results:
-                                results[topic] = {}
-                            results[topic][subtopic] = subtopic_data
-                        elif isinstance(subtopic_data, list):
-                            for item in subtopic_data:
-                                if isinstance(item, str) and query in item.lower():
-                                    if topic not in results:
-                                        results[topic] = {}
-                                    results[topic][subtopic] = subtopic_data
-                                    break
+                    if matching_frameworks:
+                        results["ai_frameworks"] = matching_frameworks
+                else:
+                    # For other topics, check if any value matches
+                    if search_value(topic_data, query):
+                        results[topic] = topic_data
         
         return results
 
