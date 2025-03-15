@@ -1,400 +1,560 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCP 框架集成指南</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #0d6efd;
+            --code-bg: #f8f9fa;
+        }
+        [data-bs-theme="dark"] {
+            --primary-color: #3d8bfd;
+            --code-bg: #1a1a1a;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
+            padding-top: 20px;
         }
-        h1, h2, h3 {
-            color: #2c3e50;
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--bs-body-color);
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease;
         }
-        .framework-section {
-            margin: 40px 0;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
+        .nav-tabs .nav-link:hover {
+            border-color: var(--primary-color);
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 500;
         }
         .code-block {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
+            background: var(--code-bg);
+            border-radius: 8px;
+            margin: 1rem 0;
+            position: relative;
+        }
+        .code-block pre {
+            padding: 1rem;
+            margin: 0;
+            border-radius: 8px;
             overflow-x: auto;
-            font-family: monospace;
         }
-        .integration-steps {
-            background: #f1f8ff;
-            padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
+        .framework-card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            margin-bottom: 2rem;
         }
-        .key-points {
-            background: #fff3e0;
-            padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
+        .framework-card:hover {
+            transform: translateY(-2px);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+        .theme-switch {
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background: #f5f5f5;
+        .theme-switch:hover {
+            background-color: var(--bs-gray-200);
         }
         .output-container {
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 15px;
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
             max-height: 300px;
             overflow-y: auto;
             font-family: monospace;
             white-space: pre-wrap;
         }
-        .spinner-border {
-            display: none;
-            margin-left: 10px;
+        .key-features {
+            background-color: var(--bs-light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .integration-steps {
+            background-color: var(--bs-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .best-practices {
+            background-color: var(--bs-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="pb-3 mb-4 border-bottom">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="display-5 fw-bold">MCP 框架集成指南</h1>
-                    <p class="lead">比较 LlamaIndex、LangChain、SmolaGents 和 AutoGen 与 MCP 的集成</p>
-                </div>
-                <div>
-                    <a href="/" class="btn btn-outline-primary">English</a>
-                </div>
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-5 fw-bold">MCP 框架集成指南</h1>
+                <p class="lead">比较 LlamaIndex、LangChain、SmolaGents 和 AutoGen 与 MCP 的集成</p>
+            </div>
+            <div class="d-flex gap-3 align-items-center">
+                <button class="theme-switch btn btn-link" id="themeToggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-moon-stars" viewBox="0 0 16 16">
+                        <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+                    </svg>
+                </button>
+                <a href="/" class="btn btn-outline-primary">English</a>
             </div>
         </header>
-    
-    <div class="key-points">
-        <h2>什么是 MCP？</h2>
-        <p>模型上下文协议（Model Context Protocol，MCP）是一个标准化协议，用于在 AI 应用程序中集成外部工具和资源。它提供了：</p>
-        <ul>
-            <li>统一的工具调用接口</li>
-            <li>标准化的资源访问方式</li>
-            <li>跨框架的互操作性</li>
-            <li>可扩展的插件系统</li>
-        </ul>
-    </div>
 
-    <h2>框架集成比较</h2>
-    <table>
-        <tr>
-            <th>框架</th>
-            <th>集成方式</th>
-            <th>代码复杂度</th>
-            <th>性能</th>
-            <th>灵活性</th>
-            <th>错误处理</th>
-        </tr>
-        <tr>
-            <td>LlamaIndex</td>
-            <td>自定义检索器</td>
-            <td>中等</td>
-            <td>优秀</td>
-            <td>高</td>
-            <td>内置</td>
-        </tr>
-        <tr>
-            <td>LangChain</td>
-            <td>工具包装器</td>
-            <td>低</td>
-            <td>良好</td>
-            <td>高</td>
-            <td>工具级</td>
-        </tr>
-        <tr>
-            <td>SmolaGents</td>
-            <td>函数调用</td>
-            <td>低</td>
-            <td>良好</td>
-            <td>中等</td>
-            <td>基础</td>
-        </tr>
-        <tr>
-            <td>AutoGen</td>
-            <td>多代理</td>
-            <td>中高</td>
-            <td>优秀</td>
-            <td>非常高</td>
-            <td>全面</td>
-        </tr>
-    </table>
-
-    <div class="framework-section">
-        <h2>1. LlamaIndex 集成</h2>
-        <div class="integration-steps">
-            <h3>集成步骤</h3>
-            <ol>
-                <li>创建自定义检索器类</li>
-                <li>实现 MCP 客户端接口</li>
-                <li>配置检索器和索引</li>
-                <li>使用查询引擎</li>
-            </ol>
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">什么是 MCP？</h4>
+            <p class="mb-0">模型上下文协议（Model Context Protocol，MCP）是一个标准化协议，用于在 AI 应用程序中集成外部工具和资源。它提供了统一的工具调用接口、标准化的资源访问方式、跨框架的互操作性和可扩展的插件系统。</p>
         </div>
-        <h3>核心集成代码</h3>
-        <div class="code-block">
-<pre>
-class MCPRetriever(BaseRetriever):
-    def __init__(self, client: MCPClient):
-        self.client = client
-        super().__init__()
-    
-    def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
-        query = query_bundle.query_str
-        results = self.client.call_tool(
-            "knowledge_base_search",
-            {"query": query}
-        )
-        nodes = []
-        for result in results:
-            node = TextNode(text=result["content"])
-            nodes.append(NodeWithScore(node=node, score=result["score"]))
-        return nodes
 
-# 使用示例
-retriever = MCPRetriever(client)
-query_engine = RetrieverQueryEngine(retriever)
-response = query_engine.query("查询示例")</pre>
-        </div>
-    </div>
-
-    <div class="framework-section">
-        <h2>2. LangChain 集成</h2>
-        <div class="integration-steps">
-            <h3>集成步骤</h3>
-            <ol>
-                <li>创建自定义工具类</li>
-                <li>实现工具包装器</li>
-                <li>配置代理系统</li>
-                <li>设置内存管理</li>
-            </ol>
-        </div>
-        <h3>核心集成代码</h3>
-        <div class="code-block">
-<pre>
-def create_mcp_knowledge_tool(client: MCPClient) -> Tool:
-    def knowledge_tool_fn(query: str) -> str:
-        result = client.call_tool(
-            "knowledge_base_search",
-            {"query": query}
-        )
-        return json.dumps(result, indent=2)
-    
-    return Tool(
-        name="mcp_knowledge_base",
-        description="访问知识库的工具",
-        func=knowledge_tool_fn
-    )
-
-# 使用示例
-tools = [create_mcp_knowledge_tool(client)]
-agent = initialize_agent(
-    tools,
-    llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True
-)</pre>
-        </div>
-    </div>
-
-    <div class="framework-section">
-        <h2>3. SmolaGents 集成</h2>
-        <div class="integration-steps">
-            <h3>集成步骤</h3>
-            <ol>
-                <li>创建轻量级工具包装器</li>
-                <li>实现直接函数调用</li>
-                <li>配置简单规划</li>
-                <li>设置工具编排</li>
-            </ol>
-        </div>
-        <h3>核心集成代码</h3>
-        <div class="code-block">
-<pre>
-class Tool:
-    def __init__(self, name: str, description: str, function: Callable):
-        self.name = name
-        self.description = description
-        self.function = function
-    
-    def __call__(self, *args, **kwargs):
-        return self.function(*args, **kwargs)
-
-def create_mcp_tool(client: MCPClient) -> Tool:
-    def tool_fn(query: str) -> str:
-        result = client.call_tool(
-            "knowledge_base_search",
-            {"query": query}
-        )
-        return json.dumps(result, indent=2)
-    
-    return Tool(
-        name="mcp_tool",
-        description="MCP 工具",
-        function=tool_fn
-    )
-
-# 使用示例
-agent = Agent(tools=[create_mcp_tool(client)])
-response = agent.run("查询示例")</pre>
-        </div>
-    </div>
-
-    <div class="framework-section">
-        <h2>4. AutoGen 集成</h2>
-        <div class="integration-steps">
-            <h3>集成步骤</h3>
-            <ol>
-                <li>创建多代理系统</li>
-                <li>实现函数注册</li>
-                <li>配置代理委派</li>
-                <li>设置对话管理</li>
-            </ol>
-        </div>
-        <h3>核心集成代码</h3>
-        <div class="code-block">
-<pre>
-function_map = {
-    "mcp_knowledge_base": lambda **kwargs: mcp_knowledge_base(client, **kwargs),
-    "mcp_data_analysis": lambda **kwargs: mcp_data_analysis(client, **kwargs),
-    "mcp_document_processing": lambda **kwargs: mcp_document_processing(client, **kwargs)
-}
-
-assistant = AssistantAgent(
-    name="assistant",
-    system_message="您是一个可以使用 MCP 函数访问知识、分析数据和处理文档的助手。",
-    llm_config={"config": "..."}
-)
-
-user_proxy = UserProxyAgent(
-    name="user_proxy",
-    human_input_mode="NEVER",
-    function_map=function_map
-)
-
-# 使用示例
-user_proxy.initiate_chat(
-    assistant,
-    "使用 MCP 查询示例"
-)</pre>
-        </div>
-    </div>
-
-    <div class="key-points">
-        <h2>最佳实践</h2>
-        <ul>
-            <li>根据项目需求选择合适的框架：
-                <ul>
-                    <li>数据检索和文档处理 → LlamaIndex</li>
-                    <li>工具链和代理系统 → LangChain</li>
-                    <li>轻量级应用 → SmolaGents</li>
-                    <li>复杂多代理系统 → AutoGen</li>
-                </ul>
+        <ul class="nav nav-tabs mb-4" id="frameworkTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">概述</button>
             </li>
-            <li>注意错误处理和异常管理</li>
-            <li>实现适当的日志记录和监控</li>
-            <li>考虑性能优化和缓存策略</li>
-            <li>保持代码模块化和可维护性</li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="llamaindex-tab" data-bs-toggle="tab" data-bs-target="#llamaindex" type="button" role="tab">LlamaIndex</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="langchain-tab" data-bs-toggle="tab" data-bs-target="#langchain" type="button" role="tab">LangChain</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="smolagents-tab" data-bs-toggle="tab" data-bs-target="#smolagents" type="button" role="tab">SmolaGents</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="autogen-tab" data-bs-toggle="tab" data-bs-target="#autogen" type="button" role="tab">AutoGen</button>
+            </li>
         </ul>
-    </div>
 
-    <div class="framework-section">
-        <h2>在线演示</h2>
-        <p>运行每个框架的集成示例，查看它们如何与 MCP 服务器交互。</p>
-        
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>LlamaIndex</h3>
-                    </div>
-                    <div class="card-body">
-                        <p>状态: <span id="llama_index-status" class="fw-bold">未运行</span></p>
-                        <p>执行时间: <span id="llama_index-time">0</span> 秒</p>
-                        
-                        <button id="llama_index-run" class="btn btn-primary run-btn" data-framework="llama_index">
-                            运行示例
-                            <span class="spinner-border spinner-border-sm" id="llama_index-spinner" role="status" aria-hidden="true"></span>
-                        </button>
-                        
-                        <div class="output-container" id="llama_index-output"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>LangChain</h3>
-                    </div>
-                    <div class="card-body">
-                        <p>状态: <span id="langchain-status" class="fw-bold">未运行</span></p>
-                        <p>执行时间: <span id="langchain-time">0</span> 秒</p>
-                        
-                        <button id="langchain-run" class="btn btn-primary run-btn" data-framework="langchain">
-                            运行示例
-                            <span class="spinner-border spinner-border-sm" id="langchain-spinner" role="status" aria-hidden="true"></span>
-                        </button>
-                        
-                        <div class="output-container" id="langchain-output"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>SmolaGents</h3>
-                    </div>
-                    <div class="card-body">
-                        <p>状态: <span id="smolagents-status" class="fw-bold">未运行</span></p>
-                        <p>执行时间: <span id="smolagents-time">0</span> 秒</p>
-                        
-                        <button id="smolagents-run" class="btn btn-primary run-btn" data-framework="smolagents">
-                            运行示例
-                            <span class="spinner-border spinner-border-sm" id="smolagents-spinner" role="status" aria-hidden="true"></span>
-                        </button>
-                        
-                        <div class="output-container" id="smolagents-output"></div>
+        <div class="tab-content" id="frameworkTabsContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <div class="row">
+                    <div class="col-12">
+                        <h2>框架集成比较</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>框架</th>
+                                        <th>集成方式</th>
+                                        <th>代码复杂度</th>
+                                        <th>性能</th>
+                                        <th>灵活性</th>
+                                        <th>错误处理</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>LlamaIndex</td>
+                                        <td>自定义检索器</td>
+                                        <td>中等</td>
+                                        <td>优秀</td>
+                                        <td>高</td>
+                                        <td>内置</td>
+                                    </tr>
+                                    <tr>
+                                        <td>LangChain</td>
+                                        <td>工具包装器</td>
+                                        <td>低</td>
+                                        <td>良好</td>
+                                        <td>高</td>
+                                        <td>工具级</td>
+                                    </tr>
+                                    <tr>
+                                        <td>SmolaGents</td>
+                                        <td>函数调用</td>
+                                        <td>低</td>
+                                        <td>良好</td>
+                                        <td>中等</td>
+                                        <td>基础</td>
+                                    </tr>
+                                    <tr>
+                                        <td>AutoGen</td>
+                                        <td>多代理</td>
+                                        <td>中高</td>
+                                        <td>优秀</td>
+                                        <td>非常高</td>
+                                        <td>全面</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>AutoGen</h3>
-                    </div>
+
+            <!-- LlamaIndex Tab -->
+            <div class="tab-pane fade" id="llamaindex" role="tabpanel">
+                <div class="card framework-card">
                     <div class="card-body">
-                        <p>状态: <span id="autogen-status" class="fw-bold">未运行</span></p>
-                        <p>执行时间: <span id="autogen-time">0</span> 秒</p>
+                        <h2>LlamaIndex 集成</h2>
                         
-                        <button id="autogen-run" class="btn btn-primary run-btn" data-framework="autogen">
-                            运行示例
-                            <span class="spinner-border spinner-border-sm" id="autogen-spinner" role="status" aria-hidden="true"></span>
-                        </button>
+                        <div class="key-features">
+                            <h3>核心组件</h3>
+                            <ul>
+                                <li><strong>MCPToolSpec 类</strong>：将 MCP 工具转换为 LlamaIndex FunctionTool 对象</li>
+                                <li><strong>客户端接口</strong>：实现 ClientSession 接口，支持工具列表和调用功能</li>
+                                <li><strong>异步支持</strong>：提供同步和异步操作方式</li>
+                                <li><strong>工具过滤</strong>：支持通过 allowed_tools 参数过滤可用工具</li>
+                            </ul>
+                        </div>
+
+                        <div class="integration-steps">
+                            <h3>集成步骤</h3>
+                            <ol>
+                                <li>安装依赖：
+                                    <div class="code-block">
+                                        <pre><code class="language-bash">pip install llama-index-tools-mcp</code></pre>
+                                    </div>
+                                </li>
+                                <li>创建 MCPToolSpec 实例：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from llama_index.tools.mcp import MCPToolSpec
+
+tool_spec = MCPToolSpec(
+    url="http://localhost:8000",
+    allowed_tools=["tool_name1", "tool_name2"]
+)
+tools = tool_spec.to_tool_list()</code></pre>
+                                    </div>
+                                </li>
+                                <li>在代理工作流中使用工具：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from llama_index.agent import AgentWorkflow
+
+agent = AgentWorkflow.from_tools_or_functions(tools)
+response = agent.run("使用 MCP 工具执行任务")</code></pre>
+                                    </div>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <div class="best-practices">
+                            <h3>最佳实践</h3>
+                            <ul>
+                                <li>实现健壮的错误处理机制</li>
+                                <li>为 MCP 工具提供清晰的文档字符串</li>
+                                <li>在异步环境中使用 to_tool_list_async 方法</li>
+                                <li>使用 allowed_tools 限制敏感工具的访问</li>
+                                <li>全面测试集成功能</li>
+                                <li>确保版本兼容性</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LangChain Tab -->
+            <div class="tab-pane fade" id="langchain" role="tabpanel">
+                <div class="card framework-card">
+                    <div class="card-body">
+                        <h2>LangChain 集成</h2>
                         
-                        <div class="output-container" id="autogen-output"></div>
+                        <div class="key-features">
+                            <h3>核心组件</h3>
+                            <ul>
+                                <li><strong>MultiServerMCPClient</strong>：连接多个 MCP 服务器的客户端</li>
+                                <li><strong>工具转换器</strong>：将 MCP 工具转换为 LangChain BaseTool 对象</li>
+                                <li><strong>资源处理器</strong>：处理 MCP 资源的 URI 引用</li>
+                                <li><strong>提示模板</strong>：支持 MCP 提示的插值</li>
+                            </ul>
+                        </div>
+
+                        <div class="integration-steps">
+                            <h3>集成步骤</h3>
+                            <ol>
+                                <li>设置 MCP 客户端：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from langchain_mcp_adapters import MultiServerMCPClient
+
+# 使用 stdio 传输
+client = MultiServerMCPClient()
+await client.connect_to_server_via_stdio(
+    "math-server",
+    "python",
+    ["./math_server.py"]
+)
+
+# 使用 SSE 传输
+await client.connect_to_server_via_sse(
+    "weather-server", 
+    "http://localhost:8000/sse"
+)</code></pre>
+                                    </div>
+                                </li>
+                                <li>获取并使用工具：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from langchain.agents import initialize_agent, AgentType
+from langchain.llms import OpenAI
+
+# 获取工具
+tools = client.get_tools()
+
+# 创建代理
+llm = OpenAI(temperature=0)
+agent = initialize_agent(
+    tools, 
+    llm,
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
+)</code></pre>
+                                    </div>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <div class="best-practices">
+                            <h3>最佳实践</h3>
+                            <ul>
+                                <li>使用单个 MultiServerMCPClient 管理多个服务器连接</li>
+                                <li>充分利用 MCP 的资源和提示功能</li>
+                                <li>实现适当的错误处理和日志记录</li>
+                                <li>考虑使用异步方法提高性能</li>
+                                <li>妥善管理长期运行应用程序的服务器连接生命周期</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SmolaGents Tab -->
+            <div class="tab-pane fade" id="smolagents" role="tabpanel">
+                <div class="card framework-card">
+                    <div class="card-body">
+                        <h2>SmolaGents 集成</h2>
+                        
+                        <div class="key-features">
+                            <h3>核心组件</h3>
+                            <ul>
+                                <li><strong>MCP 客户端</strong>：使用 JSON-RPC 2.0 协议通过标准输入/输出通信</li>
+                                <li><strong>工具包装器</strong>：将 MCP 服务器工具包装为 CodeAgent 可用的工具</li>
+                                <li><strong>传输层</strong>：使用标准 I/O 传输层进行数据传递</li>
+                                <li><strong>工具发现</strong>：动态发现和调用可用工具</li>
+                            </ul>
+                        </div>
+
+                        <div class="integration-steps">
+                            <h3>集成步骤</h3>
+                            <ol>
+                                <li>实现 MCP 客户端：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from smolagents.client import MCPClient
+
+client = MCPClient()
+client.connect_to_server("localhost", 8000)</code></pre>
+                                    </div>
+                                </li>
+                                <li>创建工具包装器：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">class MCPToolWrapper:
+    def __init__(self, client, tool_name):
+        self.client = client
+        self.tool_name = tool_name
+    
+    def __call__(self, **kwargs):
+        return self.client.call_tool(
+            self.tool_name,
+            kwargs
+        )</code></pre>
+                                    </div>
+                                </li>
+                                <li>在代理中使用工具：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from smolagents import CodeAgent
+
+# 创建工具包装器
+tool = MCPToolWrapper(client, "example_tool")
+
+# 创建代理
+agent = CodeAgent(tools=[tool])
+result = agent.run("使用 MCP 工具执行任务")</code></pre>
+                                    </div>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <div class="best-practices">
+                            <h3>最佳实践</h3>
+                            <ul>
+                                <li>谨慎管理身份验证和访问控制</li>
+                                <li>实现适当的错误处理和重试逻辑</li>
+                                <li>通过缓存优化性能</li>
+                                <li>确保与 SmolaGents 版本的兼容性</li>
+                                <li>在生产环境部署前进行全面测试</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AutoGen Tab -->
+            <div class="tab-pane fade" id="autogen" role="tabpanel">
+                <div class="card framework-card">
+                    <div class="card-body">
+                        <h2>AutoGen 集成</h2>
+                        
+                        <div class="key-features">
+                            <h3>核心组件</h3>
+                            <ul>
+                                <li><strong>SseMcpToolAdapter</strong>：包装 MCP 工具供 AutoGen 代理使用</li>
+                                <li><strong>服务器参数</strong>：使用 SseServerParams 或 StdioServerParams 配置连接</li>
+                                <li><strong>工具转换</strong>：将 MCP 工具转换为 AutoGen 兼容的工具调用接口</li>
+                                <li><strong>多代理支持</strong>：支持在多代理系统中使用 MCP 工具</li>
+                            </ul>
+                        </div>
+
+                        <div class="integration-steps">
+                            <h3>集成步骤</h3>
+                            <ol>
+                                <li>设置服务器参数：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from autogen_ext.tools.mcp import StdioServerParams, mcp_server_tools
+
+# 设置 MCP 服务器参数
+fetch_mcp_server = StdioServerParams(
+    command="uvx",
+    args=["mcp-server-fetch"]
+)</code></pre>
+                                    </div>
+                                </li>
+                                <li>获取 MCP 工具：
+                                    <div class="code-block">
+                                        <pre><code class="language-python"># 获取 MCP 工具
+tools = await mcp_server_tools(fetch_mcp_server)</code></pre>
+                                    </div>
+                                </li>
+                                <li>创建使用 MCP 工具的代理：
+                                    <div class="code-block">
+                                        <pre><code class="language-python">from autogen_agentchat.agents import AssistantAgent
+from autogen_ext.models.openai import OpenAIChatCompletionClient
+
+# 创建模型客户端
+model_client = OpenAIChatCompletionClient(model="gpt-4")
+
+# 创建带有 MCP 工具的代理
+agent = AssistantAgent(
+    name="mcp_agent",
+    model_client=model_client,
+    tools=tools
+)
+
+# 使用代理执行任务
+result = await agent.run(
+    task="使用 MCP 工具执行任务"
+)</code></pre>
+                                    </div>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <div class="best-practices">
+                            <h3>最佳实践</h3>
+                            <ul>
+                                <li>根据使用场景选择适当的服务器参数</li>
+                                <li>实现全面的错误处理机制</li>
+                                <li>确保语言模型支持函数/工具调用</li>
+                                <li>注意本地文件系统和敏感数据的访问控制</li>
+                                <li>全面测试工具集成</li>
+                                <li>保持与最新版本的兼容性</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="framework-section mt-5">
+            <h2>在线演示</h2>
+            <p>运行每个框架的集成示例，查看它们如何与 MCP 服务器交互。</p>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>LlamaIndex</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>状态: <span id="llama_index-status" class="fw-bold">未运行</span></p>
+                            <p>执行时间: <span id="llama_index-time">0</span> 秒</p>
+                            
+                            <button id="llama_index-run" class="btn btn-primary run-btn" data-framework="llama_index">
+                                运行示例
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                            
+                            <div class="output-container" id="llama_index-output"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>LangChain</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>状态: <span id="langchain-status" class="fw-bold">未运行</span></p>
+                            <p>执行时间: <span id="langchain-time">0</span> 秒</p>
+                            
+                            <button id="langchain-run" class="btn btn-primary run-btn" data-framework="langchain">
+                                运行示例
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                            
+                            <div class="output-container" id="langchain-output"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>SmolaGents</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>状态: <span id="smolagents-status" class="fw-bold">未运行</span></p>
+                            <p>执行时间: <span id="smolagents-time">0</span> 秒</p>
+                            
+                            <button id="smolagents-run" class="btn btn-primary run-btn" data-framework="smolagents">
+                                运行示例
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                            
+                            <div class="output-container" id="smolagents-output"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>AutoGen</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>状态: <span id="autogen-status" class="fw-bold">未运行</span></p>
+                            <p>执行时间: <span id="autogen-time">0</span> 秒</p>
+                            
+                            <button id="autogen-run" class="btn btn-primary run-btn" data-framework="autogen">
+                                运行示例
+                                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                            
+                            <div class="output-container" id="autogen-output"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -402,52 +562,108 @@ user_proxy.initiate_chat(
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners to run buttons
+            // Theme toggling
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', function() {
+                const html = document.documentElement;
+                const currentTheme = html.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-bs-theme', newTheme);
+                
+                // Update theme icon
+                const icon = themeToggle.querySelector('svg');
+                if (newTheme === 'dark') {
+                    icon.innerHTML = '<path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>';
+                } else {
+                    icon.innerHTML = '<path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>';
+                }
+            });
+
+            // Initialize Prism.js
+            Prism.highlightAll();
+
+            // Check MCP server status
+            async function checkServerStatus() {
+                try {
+                    const response = await fetch('/run/server_status');
+                    const data = await response.json();
+                    return data.running;
+                } catch (error) {
+                    console.error('Error checking server status:', error);
+                    return false;
+                }
+            }
+
+            // Framework example runners
             document.querySelectorAll('.run-btn').forEach(button => {
-                button.addEventListener('click', function() {
+                button.addEventListener('click', async function() {
                     const framework = this.getAttribute('data-framework');
-                    runFramework(framework);
+                    const spinner = this.querySelector('.spinner-border');
+                    const output = document.getElementById(`${framework}-output`);
+                    
+                    // Check if server is running
+                    const isServerRunning = await checkServerStatus();
+                    if (!isServerRunning) {
+                        output.textContent = '错误: MCP 服务器未运行，请先启动服务器';
+                        output.className = 'output-container mt-3 text-danger';
+                        const statusElement = document.getElementById(`${framework}-status`);
+                        if (statusElement) {
+                            statusElement.textContent = '错误';
+                            statusElement.className = 'fw-bold text-danger';
+                        }
+                        return;
+                    }
+                    
+                    // Show spinner and disable button
+                    spinner.classList.remove('d-none');
+                    button.disabled = true;
+                    
+                    // Update status to running
+                    const statusElement = document.getElementById(`${framework}-status`);
+                    const timeElement = document.getElementById(`${framework}-time`);
+                    if (statusElement) statusElement.textContent = '运行中...';
+                    
+                    // Make API request
+                    fetch(`/run/${framework}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update output
+                        output.textContent = data.output;
+                        
+                        // Update status and time
+                        if (statusElement) {
+                            statusElement.textContent = data.status === 'Success' ? '成功' : '失败';
+                            statusElement.className = `fw-bold ${data.status === 'Success' ? 'text-success' : 'text-danger'}`;
+                        }
+                        if (timeElement) {
+                            timeElement.textContent = data.time.toFixed(2);
+                        }
+                        
+                        // Style output based on status
+                        output.className = `output-container mt-3 ${data.status === 'Success' ? 'text-success' : 'text-danger'}`;
+                    })
+                    .catch(error => {
+                        output.textContent = `错误: ${error.message}`;
+                        output.className = 'output-container mt-3 text-danger';
+                        if (statusElement) {
+                            statusElement.textContent = '错误';
+                            statusElement.className = 'fw-bold text-danger';
+                        }
+                    })
+                    .finally(() => {
+                        // Hide spinner and enable button
+                        spinner.classList.add('d-none');
+                        button.disabled = false;
+                    });
                 });
             });
-            
-            // Function to run a framework example
-            function runFramework(framework) {
-                // Show spinner
-                const spinner = document.getElementById(`${framework}-spinner`);
-                spinner.style.display = 'inline-block';
-                
-                // Disable button
-                const button = document.getElementById(`${framework}-run`);
-                button.disabled = true;
-                
-                // Update status
-                const statusElement = document.getElementById(`${framework}-status`);
-                statusElement.textContent = '运行中...';
-                
-                // Make API request
-                fetch(`/run/${framework}`, {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Update UI with results
-                    statusElement.textContent = data.status === 'Success' ? '成功' : '失败';
-                    document.getElementById(`${framework}-time`).textContent = data.time.toFixed(2);
-                    document.getElementById(`${framework}-output`).textContent = data.output;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    statusElement.textContent = '错误';
-                    document.getElementById(`${framework}-output`).textContent = `错误: ${error.message}`;
-                })
-                .finally(() => {
-                    // Hide spinner and enable button
-                    spinner.style.display = 'none';
-                    button.disabled = false;
-                });
-            }
         });
     </script>
 </body>

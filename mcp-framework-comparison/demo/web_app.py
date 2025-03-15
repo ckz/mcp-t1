@@ -202,6 +202,32 @@ def run_framework(framework):
         return jsonify(framework_results[framework]), 500
 
 
+@app.route('/run/server_status', methods=['GET'])
+def check_server_status():
+    """
+    Check if the MCP server is running.
+    
+    Returns:
+        JSON response with server status
+    """
+    try:
+        # Import MCP client here to ensure it's loaded after server initialization
+        from mcp_server.tools import KnowledgeBaseTool
+        
+        # Try to use a simple MCP tool to verify server is running
+        tool = KnowledgeBaseTool()
+        tool.get_info(topic="test")
+        
+        return jsonify({
+            "running": True
+        })
+    except Exception as e:
+        logger.exception("Error checking MCP server status")
+        return jsonify({
+            "running": False,
+            "error": str(e)
+        })
+
 @app.route('/compare', methods=['GET'])
 def compare_frameworks():
     """
