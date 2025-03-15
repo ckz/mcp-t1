@@ -36,15 +36,13 @@ class Tool:
 class Agent:
     """Simulated SmolaGents Agent class."""
     
-    def __init__(self, llm: Any, tools: List[Tool]):
+    def __init__(self, tools: List[Tool]):
         """
         Initialize an agent.
         
         Args:
-            llm: Language model
-            tools: List of tools
+            tools: List of tools to use
         """
-        self.llm = llm
         self.tools = tools
     
     def run(self, query: str) -> str:
@@ -385,39 +383,10 @@ def create_mcp_web_search_tool(client: MCPClient) -> Tool:
     )
 
 
-# Simple mock LLM for demonstration purposes
-class MockLLM:
-    """Mock LLM for demonstration purposes."""
-    
-    def generate(self, prompt: str) -> str:
-        """
-        Generate a response for a prompt.
-        
-        Args:
-            prompt: Prompt string
-            
-        Returns:
-            Generated response
-        """
-        if "knowledge base" in prompt.lower():
-            return "The knowledge base contains information about AI frameworks and MCP."
-        elif "data analysis" in prompt.lower():
-            return "The data analysis shows temperature, humidity, and other weather metrics."
-        elif "document" in prompt.lower():
-            return "The documents include guides for integrating different frameworks with MCP."
-        elif "web search" in prompt.lower():
-            return "The web search found information about LlamaIndex, LangChain, SmolaGents, and AutoGen."
-        else:
-            return "I can help you access knowledge, analyze data, process documents, and search the web using MCP."
-
-
 def run_smolagents_example():
     """Run the SmolaGents integration example."""
     # Initialize MCP client
     client = MCPClient()
-    
-    # Initialize mock LLM
-    llm = MockLLM()
     
     print("\n" + "="*50)
     print("SmolaGents Integration with MCP Server")
@@ -433,13 +402,10 @@ def run_smolagents_example():
     document_tool = create_mcp_document_tool(client)
     web_search_tool = create_mcp_web_search_tool(client)
     
-    # Create agent
-    agent = Agent(
-        llm=llm,
-        tools=[knowledge_tool, data_tool, document_tool, web_search_tool]
-    )
-    
-    # Run agent
+    # Create agent with MCP tools
+    agent = Agent(tools=[knowledge_tool, data_tool, document_tool, web_search_tool])
+
+    # Run agent with example queries
     queries = [
         "Tell me about LlamaIndex",
         "Get statistics for temperature",
@@ -452,47 +418,22 @@ def run_smolagents_example():
         response = agent.run(query)
         print(f"Response:\n{response}")
     
-    # Example 2: Chaining MCP tools in SmolaGents
-    print("\nExample 2: Chaining MCP tools in SmolaGents")
+    # Example 2: Chaining MCP tools
+    print("\nExample 2: Chaining MCP tools")
     print("-"*40)
     
-    def chain_tools_fn(query: str) -> str:
-        """
-        Chain multiple tools together.
-        
-        Args:
-            query: Query string
-            
-        Returns:
-            Combined response as a string
-        """
-        # First, search the knowledge base
-        knowledge_result = json.loads(knowledge_tool(query))
-        
-        # Then, search for documents related to the query
-        # Convert query to lowercase for better matching
-        search_query = query.lower()
-        document_result = json.loads(document_tool(f"search documents for {search_query}"))
-        
-        # Combine the results
-        combined_result = {
-            "knowledge": knowledge_result,
-            "documents": document_result
-        }
-        
-        return json.dumps(combined_result, indent=2)
-    
+    # Create a chain tool that combines knowledge base and document search
     chain_tool = Tool(
         name="mcp_chain",
         description="Chain multiple tools together. Search the knowledge base and documents.",
-        function=chain_tools_fn
+        function=lambda q: json.dumps({
+            "knowledge": json.loads(knowledge_tool(q)),
+            "documents": json.loads(document_tool(f"search documents for {q.lower()}"))
+        }, indent=2)
     )
     
     # Create agent with chain tool
-    chain_agent = Agent(
-        llm=llm,
-        tools=[chain_tool]
-    )
+    chain_agent = Agent(tools=[chain_tool])
     
     # Run agent
     query = "Tell me about MCP"
