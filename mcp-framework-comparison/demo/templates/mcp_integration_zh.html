@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP 框架集成指南</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .framework-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+        }
+        .integration-steps {
+            background: #f1f8ff;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .key-points {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <h1>MCP 框架集成指南</h1>
+    
+    <div class="key-points">
+        <h2>什么是 MCP？</h2>
+        <p>模型上下文协议（Model Context Protocol，MCP）是一个标准化协议，用于在 AI 应用程序中集成外部工具和资源。它提供了：</p>
+        <ul>
+            <li>统一的工具调用接口</li>
+            <li>标准化的资源访问方式</li>
+            <li>跨框架的互操作性</li>
+            <li>可扩展的插件系统</li>
+        </ul>
+    </div>
+
+    <h2>框架集成比较</h2>
+    <table>
+        <tr>
+            <th>框架</th>
+            <th>集成方式</th>
+            <th>代码复杂度</th>
+            <th>性能</th>
+            <th>灵活性</th>
+            <th>错误处理</th>
+        </tr>
+        <tr>
+            <td>LlamaIndex</td>
+            <td>自定义检索器</td>
+            <td>中等</td>
+            <td>优秀</td>
+            <td>高</td>
+            <td>内置</td>
+        </tr>
+        <tr>
+            <td>LangChain</td>
+            <td>工具包装器</td>
+            <td>低</td>
+            <td>良好</td>
+            <td>高</td>
+            <td>工具级</td>
+        </tr>
+        <tr>
+            <td>SmolaGents</td>
+            <td>函数调用</td>
+            <td>低</td>
+            <td>良好</td>
+            <td>中等</td>
+            <td>基础</td>
+        </tr>
+        <tr>
+            <td>AutoGen</td>
+            <td>多代理</td>
+            <td>中高</td>
+            <td>优秀</td>
+            <td>非常高</td>
+            <td>全面</td>
+        </tr>
+    </table>
+
+    <div class="framework-section">
+        <h2>1. LlamaIndex 集成</h2>
+        <div class="integration-steps">
+            <h3>集成步骤</h3>
+            <ol>
+                <li>创建自定义检索器类</li>
+                <li>实现 MCP 客户端接口</li>
+                <li>配置检索器和索引</li>
+                <li>使用查询引擎</li>
+            </ol>
+        </div>
+        <h3>核心集成代码</h3>
+        <div class="code-block">
+<pre>
+class MCPRetriever(BaseRetriever):
+    def __init__(self, client: MCPClient):
+        self.client = client
+        super().__init__()
+    
+    def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
+        query = query_bundle.query_str
+        results = self.client.call_tool(
+            "knowledge_base_search",
+            {"query": query}
+        )
+        nodes = []
+        for result in results:
+            node = TextNode(text=result["content"])
+            nodes.append(NodeWithScore(node=node, score=result["score"]))
+        return nodes
+
+# 使用示例
+retriever = MCPRetriever(client)
+query_engine = RetrieverQueryEngine(retriever)
+response = query_engine.query("查询示例")</pre>
+        </div>
+    </div>
+
+    <div class="framework-section">
+        <h2>2. LangChain 集成</h2>
+        <div class="integration-steps">
+            <h3>集成步骤</h3>
+            <ol>
+                <li>创建自定义工具类</li>
+                <li>实现工具包装器</li>
+                <li>配置代理系统</li>
+                <li>设置内存管理</li>
+            </ol>
+        </div>
+        <h3>核心集成代码</h3>
+        <div class="code-block">
+<pre>
+def create_mcp_knowledge_tool(client: MCPClient) -> Tool:
+    def knowledge_tool_fn(query: str) -> str:
+        result = client.call_tool(
+            "knowledge_base_search",
+            {"query": query}
+        )
+        return json.dumps(result, indent=2)
+    
+    return Tool(
+        name="mcp_knowledge_base",
+        description="访问知识库的工具",
+        func=knowledge_tool_fn
+    )
+
+# 使用示例
+tools = [create_mcp_knowledge_tool(client)]
+agent = initialize_agent(
+    tools,
+    llm,
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True
+)</pre>
+        </div>
+    </div>
+
+    <div class="framework-section">
+        <h2>3. SmolaGents 集成</h2>
+        <div class="integration-steps">
+            <h3>集成步骤</h3>
+            <ol>
+                <li>创建轻量级工具包装器</li>
+                <li>实现直接函数调用</li>
+                <li>配置简单规划</li>
+                <li>设置工具编排</li>
+            </ol>
+        </div>
+        <h3>核心集成代码</h3>
+        <div class="code-block">
+<pre>
+class Tool:
+    def __init__(self, name: str, description: str, function: Callable):
+        self.name = name
+        self.description = description
+        self.function = function
+    
+    def __call__(self, *args, **kwargs):
+        return self.function(*args, **kwargs)
+
+def create_mcp_tool(client: MCPClient) -> Tool:
+    def tool_fn(query: str) -> str:
+        result = client.call_tool(
+            "knowledge_base_search",
+            {"query": query}
+        )
+        return json.dumps(result, indent=2)
+    
+    return Tool(
+        name="mcp_tool",
+        description="MCP 工具",
+        function=tool_fn
+    )
+
+# 使用示例
+agent = Agent(tools=[create_mcp_tool(client)])
+response = agent.run("查询示例")</pre>
+        </div>
+    </div>
+
+    <div class="framework-section">
+        <h2>4. AutoGen 集成</h2>
+        <div class="integration-steps">
+            <h3>集成步骤</h3>
+            <ol>
+                <li>创建多代理系统</li>
+                <li>实现函数注册</li>
+                <li>配置代理委派</li>
+                <li>设置对话管理</li>
+            </ol>
+        </div>
+        <h3>核心集成代码</h3>
+        <div class="code-block">
+<pre>
+function_map = {
+    "mcp_knowledge_base": lambda **kwargs: mcp_knowledge_base(client, **kwargs),
+    "mcp_data_analysis": lambda **kwargs: mcp_data_analysis(client, **kwargs),
+    "mcp_document_processing": lambda **kwargs: mcp_document_processing(client, **kwargs)
+}
+
+assistant = AssistantAgent(
+    name="assistant",
+    system_message="您是一个可以使用 MCP 函数访问知识、分析数据和处理文档的助手。",
+    llm_config={"config": "..."}
+)
+
+user_proxy = UserProxyAgent(
+    name="user_proxy",
+    human_input_mode="NEVER",
+    function_map=function_map
+)
+
+# 使用示例
+user_proxy.initiate_chat(
+    assistant,
+    "使用 MCP 查询示例"
+)</pre>
+        </div>
+    </div>
+
+    <div class="key-points">
+        <h2>最佳实践</h2>
+        <ul>
+            <li>根据项目需求选择合适的框架：
+                <ul>
+                    <li>数据检索和文档处理 → LlamaIndex</li>
+                    <li>工具链和代理系统 → LangChain</li>
+                    <li>轻量级应用 → SmolaGents</li>
+                    <li>复杂多代理系统 → AutoGen</li>
+                </ul>
+            </li>
+            <li>注意错误处理和异常管理</li>
+            <li>实现适当的日志记录和监控</li>
+            <li>考虑性能优化和缓存策略</li>
+            <li>保持代码模块化和可维护性</li>
+        </ul>
+    </div>
+
+    <script>
+        // 可以添加交互演示的 JavaScript 代码
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化代码高亮等功能
+        });
+    </script>
+</body>
+</html>

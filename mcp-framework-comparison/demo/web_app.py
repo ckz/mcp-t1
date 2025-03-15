@@ -140,6 +140,11 @@ def index():
         integration_comparison=integration_comparison
     )
 
+@app.route('/zh')
+def integration_guide_zh():
+    """Render the Chinese integration guide."""
+    return render_template('mcp_integration_zh.html')
+
 
 @app.route('/run/<framework>', methods=['POST'])
 def run_framework(framework):
