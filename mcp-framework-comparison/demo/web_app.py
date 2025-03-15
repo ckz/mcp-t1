@@ -19,7 +19,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import example modules
 from examples.llama_index_integration.main import run_llama_index_example
-from examples.langchain_integration.main import run_langchain_example
+from examples.langchain_integration.main import run_mcp_examples
 from examples.smolagents_integration.main import run_smolagents_example
 from examples.autogen_integration.main import run_autogen_example
 
@@ -168,7 +168,7 @@ def run_framework(framework):
             if framework == "llama_index":
                 run_llama_index_example()
             elif framework == "langchain":
-                run_langchain_example()
+                run_mcp_examples()
             elif framework == "smolagents":
                 run_smolagents_example()
             elif framework == "autogen":

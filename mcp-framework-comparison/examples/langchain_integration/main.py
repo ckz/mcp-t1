@@ -258,176 +258,40 @@ class MCPWebSearchTool(BaseTool):
         return json.dumps(result, indent=2)
 
 
-# Simple mock LLM for demonstration purposes
-class MockLLM(LLM):
-    """Mock LLM for demonstration purposes."""
-    
-    @property
-    def _llm_type(self) -> str:
-        return "mock"
-    
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> str:
-        """Call the LLM with the prompt."""
-        if "knowledge base" in prompt.lower():
-            return "The knowledge base contains information about AI frameworks and MCP."
-        elif "data analysis" in prompt.lower():
-            return "The data analysis shows temperature, humidity, and other weather metrics."
-        elif "document" in prompt.lower():
-            return "The documents include guides for integrating different frameworks with MCP."
-        elif "web search" in prompt.lower():
-            return "The web search found information about LlamaIndex, LangChain, SmolaGents, and AutoGen."
-        else:
-            return "I can help you access knowledge, analyze data, process documents, and search the web using MCP."
-    
-    def _generate(
-        self,
-        prompts: List[str],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> LLMResult:
-        """Generate completions for the prompts."""
-        completions = []
-        for prompt in prompts:
-            completion = self._call(prompt, stop, run_manager, **kwargs)
-            completions.append(completion)
-        
-        return LLMResult(generations=[[{"text": text}] for text in completions])
-
-
-def run_langchain_example():
-    """Run the LangChain integration example."""
+def run_mcp_examples():
+    """Run direct MCP integration examples."""
     # Initialize MCP client
     client = MCPClient()
     
-    # Initialize mock LLM
-    llm = MockLLM()
-    
     print("\n" + "="*50)
-    print("LangChain Integration with MCP Server")
+    print("MCP Knowledge Base Examples")
     print("="*50)
     
-    # Example 1: Using MCP tools with LangChain agents
-    print("\nExample 1: Using MCP tools with LangChain agents")
+    # Example 1: Get information about LlamaIndex
+    print("\nExample 1: Information about LlamaIndex")
     print("-"*40)
+    result = client.call_tool("knowledge_base_get_info", {"topic": "ai_frameworks", "subtopic": "llama_index"})
+    print(json.dumps(result, indent=2))
     
-    # Create tools
-    tools = [
-        MCPKnowledgeBaseTool(client),
-        MCPDataAnalysisTool(client),
-        MCPDocumentTool(client),
-        MCPWebSearchTool(client)
-    ]
-    
-    # Create agent
-    agent = initialize_agent(
-        tools,
-        llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,
-        handle_parsing_errors=True
-    )
-    
-    # Run agent
-    query = "Tell me about LlamaIndex"
-    print(f"Query: {query}")
-    response = agent.run(query)
-    print(f"Response: {response}")
-    
-    # Example 2: Using MCP in a LangChain chain
-    print("\nExample 2: Using MCP in a LangChain chain")
+    # Example 2: Compare frameworks
+    print("\nExample 2: Framework Comparison")
     print("-"*40)
+    frameworks = client.call_tool("knowledge_base_get_info", {"topic": "ai_frameworks"})
+    print("Key features comparison:")
+    for name, info in frameworks.items():
+        print(f"\n{name}:")
+        print(f"Description: {info['description']}")
+        print(f"Key features: {', '.join(info['key_features'])}")
     
-    # Create a prompt template
-    template = """
-    You are an AI assistant that has access to a knowledge base.
-    
-    User query: {query}
-    
-    Knowledge base information:
-    {knowledge}
-    
-    Your response:
-    """
-    
-    prompt = PromptTemplate(
-        input_variables=["query", "knowledge"],
-        template=template
-    )
-    
-    # Create a chain
-    chain = LLMChain(llm=llm, prompt=prompt)
-    
-    # Run chain
-    query = "What is MCP?"
-    print(f"Query: {query}")
-    
-    # Get knowledge from MCP
-    knowledge = client.call_tool("knowledge_base_get_info", {"topic": "mcp"})
-    knowledge_str = json.dumps(knowledge, indent=2)
-    
-    # Run chain
-    response = chain.run(query=query, knowledge=knowledge_str)
-    print(f"Response: {response}")
-    
-    # Example 3: Using MCP with LangChain memory
-    print("\nExample 3: Using MCP with LangChain memory")
+    # Example 3: Search functionality
+    print("\nExample 3: Search for specific capabilities")
     print("-"*40)
-    
-    # Create memory
-    memory = ConversationBufferMemory(memory_key="chat_history", input_key="query")
-    
-    # Create a prompt template with memory
-    template_with_memory = """
-    You are an AI assistant that has access to a knowledge base and chat history.
-    
-    Chat history:
-    {chat_history}
-    
-    User query: {query}
-    
-    Knowledge base information:
-    {knowledge}
-    
-    Your response:
-    """
-    
-    prompt_with_memory = PromptTemplate(
-        input_variables=["query", "knowledge", "chat_history"],
-        template=template_with_memory
-    )
-    
-    # Create a chain with memory
-    chain_with_memory = LLMChain(
-        llm=llm,
-        prompt=prompt_with_memory,
-        memory=memory
-    )
-    
-    # Run chain
-    queries = [
-        "What is LlamaIndex?",
-        "How does it compare to LangChain?",
-        "What about SmolaGents and AutoGen?"
-    ]
-    
-    for query in queries:
-        print(f"\nQuery: {query}")
-        
-        # Get knowledge from MCP
-        knowledge = client.call_tool("knowledge_base_search", {"query": query})
-        knowledge_str = json.dumps(knowledge, indent=2)
-        
-        # Run chain
-        response = chain_with_memory.run(query=query, knowledge=knowledge_str)
-        print(f"Response: {response}")
+    search_terms = ["agents", "RAG", "tool"]
+    for term in search_terms:
+        print(f"\nSearching for '{term}':")
+        results = client.call_tool("knowledge_base_search", {"query": term})
+        print(json.dumps(results, indent=2))
 
 
 if __name__ == "__main__":
-    run_langchain_example()
+    run_mcp_examples()
