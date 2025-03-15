@@ -330,7 +330,8 @@ def run_langchain_example():
         tools,
         llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True
+        verbose=True,
+        handle_parsing_errors=True
     )
     
     # Run agent
