@@ -32,26 +32,73 @@ mcp-framework-comparison/
 
 The project implements a common MCP server that provides:
 
-1. **Knowledge Base Tool** - Access to a structured knowledge base
-2. **Data Analysis Tool** - Ability to analyze and visualize data
-3. **Web Search Resource** - Access to web search results
-4. **Document Processing** - Processing and extracting information from documents
+### Knowledge Base Tool
+- Structured knowledge base with information about AI frameworks
+- Direct framework information retrieval with detailed formatting
+- Recursive search through nested data structures
+- Query matching for framework names and variations
+- Information includes descriptions, features, use cases, and GitHub links
 
-Each framework integration demonstrates how to:
-- Connect to the MCP server
-- Use the provided tools and resources
-- Handle responses and errors
-- Implement framework-specific features
+### Data Analysis Tool
+- Statistical analysis capabilities
+- Summary statistics generation
+- Data filtering with multiple operators
+- Correlation analysis with interpretation
+- Support for various data types
+
+### Document Processing
+- Document content extraction and indexing
+- Entity extraction from text
+- Text summarization
+- Keyword extraction with frequency analysis
+- Document search with relevance scoring
+
+### Web Search Resource
+- Mock web search functionality
+- Structured search results with titles, URLs, and snippets
+- Framework-specific search results
+- Query-based result filtering
+
+## Framework Integrations
+
+### LlamaIndex Integration
+- Custom retrievers for knowledge base and documents
+- Document indexing with metadata support
+- Relevance scoring based on content matching
+- Integration with LlamaIndex's node system
+- Support for both direct retrieval and search
+
+### LangChain Integration
+- Custom tools for accessing MCP functionality
+- Integration with LangChain's agent system
+- Memory management for conversation history
+- Tool chaining capabilities
+- Error handling and response formatting
+
+### SmolaGents Integration
+- Lightweight tool wrappers
+- Direct function calling interface
+- Simple planning capabilities
+- Integration with Hugging Face ecosystem
+- Efficient tool orchestration
+
+### AutoGen Integration
+- Multi-agent conversation support
+- Function registration system
+- Human-in-the-loop capabilities
+- Complex reasoning workflows
+- Agent delegation patterns
 
 ## Comparison Metrics
 
 The project evaluates each framework on:
-- Ease of integration with MCP
-- Code complexity
-- Performance
-- Flexibility
-- Error handling
-- Documentation quality
+
+| Framework  | Integration Approach | Code Complexity | Performance | Flexibility | Error Handling | Documentation |
+|------------|---------------------|-----------------|-------------|-------------|----------------|---------------|
+| LlamaIndex | Custom retrievers   | Medium         | Excellent   | High        | Built-in      | Comprehensive |
+| LangChain  | Tool wrappers      | Low            | Good        | High        | Tool-level    | Extensive     |
+| SmolaGents | Function calls     | Low            | Good        | Medium      | Basic         | Growing       |
+| AutoGen    | Multi-agent        | Medium-High    | Excellent   | Very High   | Comprehensive | Good          |
 
 ## Getting Started
 
@@ -60,13 +107,18 @@ The project evaluates each framework on:
    pip install -r requirements.txt
    ```
 
-2. Run the web demo to compare all framework integrations:
+2. Run the MCP server:
+   ```
+   python3 run_server.py
+   ```
+
+3. Run the web demo to compare all framework integrations:
    ```
    python3 demo/web_app.py
    ```
    This will start a Flask web server at http://localhost:5000 where you can compare the different framework integrations.
 
-3. Alternatively, run individual examples:
+4. Run individual examples:
    ```
    # Run the LlamaIndex integration example
    python3 examples/llama_index_integration/main.py
@@ -81,10 +133,41 @@ The project evaluates each framework on:
    python3 examples/autogen_integration/main.py
    ```
 
-4. Run all examples sequentially:
+5. Run all examples sequentially:
    ```
    python3 run_all_examples.py
    ```
+
+## Requirements
+
+- Python 3.9+
+- Dependencies listed in requirements.txt
+
+## Recent Updates
+
+### 2025-03-15
+- **Improve MCP retrievers for LlamaIndex integration**
+  - Enhanced knowledge base search with recursive value searching
+  - Added direct framework info retrieval with better formatting
+  - Improved document retrieval scoring and preview formatting
+  - Fixed query matching for LlamaIndex-related searches
+
+- **Update SmolaGents MCP integration**
+  - Improved query string handling
+  - Enhanced document search functionality
+  - Better tool orchestration
+
+- **Fix LangChain integration**
+  - Added proper memory configuration
+  - Improved agent error handling
+  - Enhanced tool response formatting
+
+- **Fix bugs and improve documentation**
+  - Updated package dependencies
+  - Fixed import paths
+  - Resolved recursion issues
+  - Improved error handling
+  - Enhanced code documentation
 
 ## Known Issues
 
@@ -94,36 +177,10 @@ The project evaluates each framework on:
   ```
   This is likely due to API changes in the MCP package. A potential fix would be to update the import statements in `mcp_server/server.py` to match the current MCP package API.
 
-- As a workaround, the examples are designed to simulate MCP functionality without requiring a separate MCP server process.
+## Contributing
 
-## Requirements
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-- Python 3.9+
-- Dependencies listed in requirements.txt
+## License
 
-## Changelog
-
-### 2025-03-15
-- **Update SmolaGents MCP integration example and consolidate gitignore files**
-  - Improved SmolaGents integration by converting query strings to lowercase for better matching
-  - Consolidated gitignore files for better project organization
-  - Enhanced document search functionality in the chain tools example
-
-- **Fix memory configuration in LangChain example**
-  - Added input_key parameter to ConversationBufferMemory for proper memory handling
-
-- **Fix LangChain agent initialization to handle parsing errors**
-  - Added handle_parsing_errors=True to agent initialization to improve error handling
-
-- **Fix bugs in MCP framework comparison project**
-  - Fixed package name in requirements.txt from 'modelcontextprotocol' to 'mcp'
-  - Updated import paths in server.py to use the correct package name
-  - Fixed duplicate function definition in llama_index_integration/main.py
-  - Corrected syntax errors in langchain_integration/main.py
-  - Resolved recursion issues in autogen_integration/main.py
-  - Fixed syntax error in resources.py by replacing multiline string
-  - Added required '_call' method to MockLLM class in langchain_integration/main.py
-  - Fixed Pydantic field issues in tool classes
-
-- **Initial project creation**
-  - Added MCP framework comparison project with LlamaIndex, LangChain, SmolaGents, and AutoGen integrations
+This project is licensed under the MIT License - see the LICENSE file for details.
