@@ -61,11 +61,52 @@ class Agent:
         # For demonstration, we'll use a simple keyword matching approach
         response = f"Query: {query}\n\n"
         
-        for tool in self.tools:
-            if any(keyword in query.lower() for keyword in tool.name.lower().split("_")):
-                result = tool(query)
-                response += f"Using tool: {tool.name}\n"
-                response += f"Result: {result}\n\n"
+        # Try to match tools based on query content
+        query_lower = query.lower()
+        matched_tools = []
+        
+        # First try to match chain tool for comprehensive queries
+        if "mcp" in query_lower or "tell me about" in query_lower:
+            for tool in self.tools:
+                if "chain" in tool.name.lower():
+                    matched_tools.append(tool)
+                    break
+        
+        # If no chain tool matched, try specific tools
+        if not matched_tools:
+            # Match data analysis tool
+            if any(keyword in query_lower for keyword in ["statistics", "stats", "analyze", "correlation"]):
+                for tool in self.tools:
+                    if "data" in tool.name.lower():
+                        matched_tools.append(tool)
+                        break
+            
+            # Match document tool
+            elif any(keyword in query_lower for keyword in ["document", "summarize", "extract"]):
+                for tool in self.tools:
+                    if "document" in tool.name.lower():
+                        matched_tools.append(tool)
+                        break
+            
+            # Match web search tool
+            elif "search" in query_lower:
+                for tool in self.tools:
+                    if "search" in tool.name.lower():
+                        matched_tools.append(tool)
+                        break
+            
+            # If no tools matched, try the knowledge base tool as a fallback
+            if not matched_tools:
+                for tool in self.tools:
+                    if "knowledge" in tool.name.lower():
+                        matched_tools.append(tool)
+                        break
+        
+        # Execute matched tools
+        for tool in matched_tools:
+            result = tool(query)
+            response += f"Using tool: {tool.name}\n"
+            response += f"Result: {result}\n\n"
         
         return response
 
@@ -184,21 +225,35 @@ def create_mcp_knowledge_tool(client: MCPClient) -> Tool:
             Knowledge base response as a string
         """
         # Parse the query to extract topic and subtopic
-        parts = query.split(" about ")
-        if len(parts) > 1:
-            topic = parts[1].strip().lower()  # Convert to lowercase
-            
-            # Check if there's a subtopic
-            topic_parts = topic.split(" specifically ")
-            if len(topic_parts) > 1:
-                topic = topic_parts[0].strip()
-                subtopic = topic_parts[1].strip()
+        query_lower = query.lower()
+        
+        # Try to identify the topic
+        topic = None
+        if "llamaindex" in query_lower or "llama index" in query_lower:
+            topic = "ai_frameworks"
+            subtopic = "llama_index"
+        elif "langchain" in query_lower:
+            topic = "ai_frameworks"
+            subtopic = "langchain"
+        elif "smolagents" in query_lower:
+            topic = "ai_frameworks"
+            subtopic = "smolagents"
+        elif "autogen" in query_lower:
+            topic = "ai_frameworks"
+            subtopic = "autogen"
+        elif "mcp" in query_lower:
+            topic = "mcp"
+            subtopic = None
+        
+        # Get information based on identified topic
+        if topic:
+            if subtopic:
                 result = client.call_tool("knowledge_base_get_info", {"topic": topic, "subtopic": subtopic})
             else:
                 result = client.call_tool("knowledge_base_get_info", {"topic": topic})
         else:
-            # Just search the knowledge base
-            result = client.call_tool("knowledge_base_search", {"query": query})
+            # If no specific topic identified, search the knowledge base
+            result = client.call_tool("knowledge_base_search", {"query": query_lower})
         
         return json.dumps(result, indent=2)
     
@@ -230,15 +285,26 @@ def create_mcp_data_tool(client: MCPClient) -> Tool:
             Data analysis response as a string
         """
         # Parse the query to extract column name
-        if "statistics for" in query.lower():
-            parts = query.lower().split("statistics for")
+        query_lower = query.lower()
+        
+        # Try to identify the column name
+        column = None
+        if "statistics for" in query_lower:
+            parts = query_lower.split("statistics for")
             if len(parts) > 1:
                 column = parts[1].strip()
-                result = client.call_tool("data_analysis_get_summary_statistics", {"column": column})
-            else:
-                result = client.call_tool("data_analysis_get_summary_statistics", {})
-        elif "correlation between" in query.lower():
-            parts = query.lower().split("correlation between")
+        elif "stats for" in query_lower:
+            parts = query_lower.split("stats for")
+            if len(parts) > 1:
+                column = parts[1].strip()
+        elif "analyze" in query_lower:
+            parts = query_lower.split("analyze")
+            if len(parts) > 1:
+                column = parts[1].strip()
+        
+        # Handle correlation queries
+        if "correlation between" in query_lower:
+            parts = query_lower.split("correlation between")
             if len(parts) > 1:
                 columns = parts[1].strip().split(" and ")
                 if len(columns) > 1:
@@ -252,9 +318,13 @@ def create_mcp_data_tool(client: MCPClient) -> Tool:
                     result = {"error": "Please specify two columns for correlation"}
             else:
                 result = {"error": "Please specify two columns for correlation"}
+        # Handle statistics queries
         else:
-            # Just get summary statistics for all columns
-            result = client.call_tool("data_analysis_get_summary_statistics", {})
+            if column:
+                result = client.call_tool("data_analysis_get_summary_statistics", {"column": column})
+            else:
+                # Get all statistics if no specific column
+                result = client.call_tool("data_analysis_get_summary_statistics", {})
         
         return json.dumps(result, indent=2)
     
@@ -423,13 +493,44 @@ def run_smolagents_example():
     print("-"*40)
     
     # Create a chain tool that combines knowledge base and document search
+    def chain_tools_fn(query: str) -> str:
+        """Chain knowledge base and document search."""
+        query_lower = query.lower()
+        
+        # Get knowledge base info
+        if "mcp" in query_lower:
+            knowledge_result = json.loads(knowledge_tool("Tell me about MCP"))
+        else:
+            knowledge_result = json.loads(knowledge_tool(query))
+        
+        # Get relevant documents
+        doc_list = json.loads(document_tool(""))  # Empty query lists all documents
+        if isinstance(doc_list, dict) and "documents" in doc_list:
+            # Filter documents by relevance to query
+            relevant_docs = []
+            query_terms = query_lower.split()
+            for doc in doc_list["documents"]:
+                if any(term in doc["title"].lower() for term in query_terms):
+                    # Get document summary
+                    summary_result = json.loads(document_tool(f"summarize document {doc['id']}"))
+                    if isinstance(summary_result, dict) and "summary" in summary_result:
+                        relevant_docs.append({
+                            "title": doc["title"],
+                            "summary": summary_result["summary"]
+                        })
+            doc_result = {"documents": relevant_docs}
+        else:
+            doc_result = {"documents": []}
+        
+        return json.dumps({
+            "knowledge": knowledge_result,
+            "documents": doc_result
+        }, indent=2)
+    
     chain_tool = Tool(
         name="mcp_chain",
         description="Chain multiple tools together. Search the knowledge base and documents.",
-        function=lambda q: json.dumps({
-            "knowledge": json.loads(knowledge_tool(q)),
-            "documents": json.loads(document_tool(f"search documents for {q.lower()}"))
-        }, indent=2)
+        function=chain_tools_fn
     )
     
     # Create agent with chain tool
