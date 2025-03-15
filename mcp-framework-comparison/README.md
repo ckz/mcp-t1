@@ -12,6 +12,7 @@ This project demonstrates the integration of a Model Context Protocol (MCP) serv
 ```
 mcp-framework-comparison/
 ├── README.md                     # Project documentation
+├── README_zh.md                  # Chinese documentation
 ├── requirements.txt              # Python dependencies
 ├── mcp_server/                   # Core MCP server implementation
 │   ├── __init__.py
@@ -157,10 +158,12 @@ The project evaluates each framework on:
   - Enhanced document search functionality
   - Better tool orchestration
 
-- **Fix LangChain integration**
+- **Enhance LangChain integration**
   - Added proper memory configuration
   - Improved agent error handling
   - Enhanced tool response formatting
+  - Switched to Tool factory pattern
+  - Added better framework-specific query handling
 
 - **Fix bugs and improve documentation**
   - Updated package dependencies
@@ -168,14 +171,7 @@ The project evaluates each framework on:
   - Resolved recursion issues
   - Improved error handling
   - Enhanced code documentation
-
-## Known Issues
-
-- The MCP server implementation has compatibility issues with the latest version of the MCP package, resulting in the following error:
-  ```
-  ImportError: cannot import name 'StdioServerTransport' from 'mcp.server.stdio'
-  ```
-  This is likely due to API changes in the MCP package. A potential fix would be to update the import statements in `mcp_server/server.py` to match the current MCP package API.
+  - Added Chinese documentation
 
 ## Contributing
 
