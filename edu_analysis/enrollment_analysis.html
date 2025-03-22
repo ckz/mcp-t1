@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Enrollment Analysis 2020-2022</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .chart-container {
+            margin: 20px 0;
+            height: 400px;
+        }
+        .insight {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>U.S. School Enrollment Analysis (2020-2022)</h1>
+        
+        <div class="insight">
+            <h3>Key Findings:</h3>
+            <ul>
+                <li>Total enrollment increased slightly from 49.4M (2020) to 49.6M (2022)</li>
+                <li>Gender distribution remains consistent: ~51% male, ~49% female</li>
+                <li>White students represent the largest demographic (~44%), followed by Hispanic (~29%) and Black (~15%)</li>
+                <li>Multi-racial student population showed growth from 2020 to 2022</li>
+            </ul>
+        </div>
+
+        <div class="chart-container">
+            <h2>Total Enrollment Trends</h2>
+            <canvas id="totalEnrollmentChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>Enrollment by Race (2022)</h2>
+            <canvas id="raceChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>Gender Distribution Over Time</h2>
+            <canvas id="genderChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Data processing
+        const years = [2020, 2021, 2022];
+        const totalEnrollment = [49422273, 49453052, 49620679];
+        
+        const raceLabels = {
+            1: 'White',
+            2: 'Black',
+            3: 'Hispanic',
+            4: 'Asian',
+            5: 'Native American',
+            6: 'Pacific Islander',
+            7: 'Multi-racial'
+        };
+
+        const race2022Data = [
+            21888854, // White
+            7325981,  // Black
+            14185678, // Hispanic
+            2674584,  // Asian
+            482894,   // Native American
+            185587,   // Pacific Islander
+            2423726   // Multi-racial
+        ];
+
+        const genderData = {
+            male: [25340990, 25362755, 25241093],
+            female: [24060172, 24069731, 23926211]
+        };
+
+        // Total Enrollment Chart
+        new Chart(document.getElementById('totalEnrollmentChart'), {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Total Enrollment',
+                    data: totalEnrollment,
+                    borderColor: '#007bff',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Number of Students'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Race Distribution Chart
+        new Chart(document.getElementById('raceChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.values(raceLabels),
+                datasets: [{
+                    data: race2022Data,
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40',
+                        '#C9CBCF'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+
+        // Gender Distribution Chart
+        new Chart(document.getElementById('genderChart'), {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Male',
+                    data: genderData.male,
+                    backgroundColor: '#36A2EB'
+                }, {
+                    label: 'Female',
+                    data: genderData.female,
+                    backgroundColor: '#FF6384'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Number of Students'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
